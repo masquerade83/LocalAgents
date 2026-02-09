@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YOLO Analytics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: #1a1a2e; color: #eee; }
+    h1 { margin-top: 0; }
+    h2 { border-bottom: 1px solid #444; padding-bottom: 8px; margin-top: 24px; }
+    a { color: #6af; }
+    .card { background: #16213e; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    input, select, button { padding: 8px 12px; border-radius: 6px; border: 1px solid #444; background: #0f0f1a; color: #eee; }
+    button { cursor: pointer; background: #0f3460; }
+    button:hover { background: #1a4a7a; }
+    button.danger { background: #6b2d2d; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #333; }
+    .status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    .status.on { background: #1a4a2e; color: #8f8; }
+    .status.off { background: #4a2e1a; color: #fa8; }
+    .config-ok { color: #8f8; }
+    .config-missing { color: #f88; }
+    #summaryChart { max-height: 320px; }
+    .trigger-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #333; border-radius: 6px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>YOLO Analytics Dashboard</h1>
+  <p><a href="/">← Back to stream viewer</a></p>
+
+  <section class="card">
+    <h2>Capture</h2>
+    <div class="row">
+      <span id="captureStatus" class="status off">Stopped</span>
+      <input type="text" id="analyticsRtspUrl" placeholder="rtsp://user:pass@host/stream" style="min-width: 320px;">
+      <label>Interval (s) <input type="number" id="analyticsInterval" value="1" min="0.5" step="0.5" style="width: 60px;"></label>
+      <label>Conf <input type="number" id="analyticsConf" value="0.25" min="0.05" max="1" step="0.05" style="width: 60px;"></label>
+      <button id="btnStartCapture">Start analytics</button>
+      <button id="btnStopCapture" disabled>Stop</button>
+    </div>
+    <p style="font-size: 12px; color: #888;">Analytics capture runs YOLO on the stream at the given interval and stores detections for reports and triggers.</p>
+  </section>
+
+  <section class="card">
+    <h2>Reports</h2>
+    <div class="row">
+      <label>From <input type="datetime-local" id="reportFrom"></label>
+      <label>To <input type="datetime-local" id="reportTo"></label>
+      <select id="reportGroupBy">
+        <option value="class">By class</option>
+        <option value="hour">By hour</option>
+        <option value="day">By day</option>
+      </select>
+      <button id="btnLoadReport">Load report</button>
+    </div>
+    <div style="margin-top: 16px;">
+      <canvas id="summaryChart"></canvas>
+    </div>
+    <h3>Recent detections</h3>
+    <div id="detectionsTableWrap"></div>
+  </section>
+
+  <section class="card">
+    <h2>Alert message & options</h2>
+    <p>
+      <label>Message template (use <code>{trigger_name}</code> and <code>{message}</code>):</label><br>
+      <textarea id="alertMessageTemplate" rows="2" style="width:100%; max-width:560px; margin-top:6px;" placeholder="Alert: {trigger_name} - {message}"></textarea>
+    </p>
+    <p>
+      <label><input type="checkbox" id="alertIncludeFrame"> Attach current frame to WhatsApp when a trigger fires</label>
+    </p>
+    <p>
+      <label>Public base URL (required for image in WhatsApp):</label><br>
+      <input type="text" id="alertPublicBaseUrl" placeholder="https://xxxx.ngrok-free.app" style="width:100%; max-width:400px; margin-top:6px;">
+      <br><small>Run <code>./run_tunnel.sh</code> or <code>ngrok http 5001</code> and paste the HTTPS URL here. See <a href="TUNNEL.md" target="_blank">TUNNEL.md</a> for setup.</small>
+    </p>
+    <button id="btnSaveAlertConfig">Save alert config</button>
+    <span id="alertConfigResult" style="margin-left:10px; font-size:0.9em;"></span>
+  </section>
+
+  <section class="card">
+    <h2>Triggers & alerts</h2>
+    <p>
+      Notifications: <span id="emailConfig" class="config-missing">Email not configured</span> |
+      <span id="smsConfig" class="config-missing">SMS not configured</span> |
+      <span id="whatsappConfig" class="config-missing">WhatsApp not configured</span>
+      <button type="button" id="btnTestWhatsapp" style="margin-left:6px">Send test WhatsApp</button>
+      <span id="whatsappTestResult" style="margin-left:6px;font-size:0.9em"></span>
+      <button type="button" id="btnSendTestAlert" style="margin-left:6px">Send test alert (template)</button>
+      <span id="testAlertResult" style="margin-left:6px;font-size:0.9em"></span>
+      <br><small>Email: ANALYTICS_SMTP_*, ANALYTICS_ALERT_EMAIL_TO. SMS/WhatsApp: TWILIO_*, TWILIO_WHATSAPP_FROM, ANALYTICS_ALERT_WHATSAPP_TO.</small>
+    </p>
+    <p>
+      <button type="button" id="btnTriggerStatus">Check trigger status</button>
+      <span id="triggerStatusSummary" style="margin-left:8px;font-size:0.9em;color:#888;"></span>
+      <pre id="triggerStatusDetail" style="display:none; margin-top:8px; padding:8px; background:#0f0f1a; border-radius:6px; font-size:12px; max-height:200px; overflow:auto;"></pre>
+    </p>
+    <div id="triggersList"></div>
+    <h3>Add trigger</h3>
+    <div class="row">
+      <input type="text" id="triggerName" placeholder="Trigger name">
+      <select id="triggerRuleType">
+        <option value="class_detected">Class detected</option>
+        <option value="count_above">Count above</option>
+      </select>
+      <input type="text" id="triggerClass" placeholder="class_name e.g. person">
+      <input type="number" id="triggerMinConf" placeholder="min_confidence" value="0.25" step="0.05" style="width:80px">
+      <input type="number" id="triggerCount" placeholder="count" value="1" style="width:60px" title="For count_above">
+      <input type="number" id="triggerWindow" placeholder="window_sec" value="60" style="width:80px" title="For count_above">
+      <input type="number" id="triggerCooldown" placeholder="cooldown_sec" value="300" style="width:80px">
+      <label><input type="checkbox" id="triggerEmail"> Email</label>
+      <label><input type="checkbox" id="triggerSms"> SMS</label>
+      <label><input type="checkbox" id="triggerWhatsapp"> WhatsApp</label>
+      <button id="btnAddTrigger">Add trigger</button>
+    </div>
+  </section>
+
+  <script>
+    const API = {
+      async get(path) { const r = await fetch(path); return r.json(); },
+      async post(path, body) { const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) }); return r.json(); },
+      async delete(path) { await fetch(path, { method: 'DELETE' }); }
+    };
+
+    function unixSecFromDatetimeLocal(el) {
+      const v = el.value;
+      if (!v) return null;
+      return Math.floor(new Date(v).getTime() / 1000);
+    }
+    function setDatetimeToNow(fromTo) {
+      const d = new Date();
+      if (fromTo === 'from') { d.setDate(d.getDate() - 1); }
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    document.getElementById('reportFrom').value = setDatetimeToNow('from');
+    document.getElementById('reportTo').value = setDatetimeToNow('to');
+
+    let summaryChart = null;
+    async function loadReport() {
+      const fromEl = document.getElementById('reportFrom');
+      const toEl = document.getElementById('reportTo');
+      const from_ts = unixSecFromDatetimeLocal(fromEl);
+      const to_ts = unixSecFromDatetimeLocal(toEl);
+      if (from_ts == null || to_ts == null) { alert('Set From and To'); return; }
+      const groupBy = document.getElementById('reportGroupBy').value;
+      const data = await API.get(`/api/analytics/summary?from_ts=${from_ts}&to_ts=${to_ts}&group_by=${groupBy}`);
+      const summary = data.summary || [];
+      const ctx = document.getElementById('summaryChart').getContext('2d');
+      if (summaryChart) summaryChart.destroy();
+      summaryChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: summary.map(s => s.key), datasets: [{ label: 'Count', data: summary.map(s => s.count), backgroundColor: 'rgba(100,150,255,0.6)' }] },
+        options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
+      });
+      const det = await API.get(`/api/analytics/detections?from_ts=${from_ts}&to_ts=${to_ts}&limit=200`);
+      const rows = (det.detections || []).map(d => `<tr><td>${new Date(d.ts*1000).toISOString()}</td><td>${d.class_name}</td><td>${Number(d.confidence).toFixed(2)}</td><td>${(d.stream_id || '').slice(0,40)}</td></tr>`);
+      document.getElementById('detectionsTableWrap').innerHTML = rows.length
+        ? `<table><thead><tr><th>Time</th><th>Class</th><th>Conf</th><th>Stream</th></tr></thead><tbody>${rows.join('')}</tbody></table>`
+        : '<p>No detections in range.</p>';
+    }
+    document.getElementById('btnLoadReport').addEventListener('click', loadReport);
+
+    async function refreshCaptureStatus() {
+      const s = await API.get('/api/analytics/status');
+      const el = document.getElementById('captureStatus');
+      const startBtn = document.getElementById('btnStartCapture');
+      const stopBtn = document.getElementById('btnStopCapture');
+      if (s.running) {
+        el.textContent = 'Running: ' + (s.stream_id || '').slice(0, 40);
+        el.className = 'status on';
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      } else {
+        el.textContent = 'Stopped';
+        el.className = 'status off';
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+    }
+    document.getElementById('btnStartCapture').addEventListener('click', async () => {
+      const url = document.getElementById('analyticsRtspUrl').value.trim();
+      if (!url) { alert('Enter RTSP URL'); return; }
+      const interval_sec = parseFloat(document.getElementById('analyticsInterval').value) || 1;
+      const confidence = parseFloat(document.getElementById('analyticsConf').value) || 0.25;
+      await API.post('/api/analytics/start', { rtsp_url: url, interval_sec, confidence });
+      refreshCaptureStatus();
+    });
+    document.getElementById('btnStopCapture').addEventListener('click', async () => {
+      await API.post('/api/analytics/stop');
+      refreshCaptureStatus();
+    });
+
+    async function refreshTriggers() {
+      const data = await API.get('/api/analytics/triggers');
+      const list = document.getElementById('triggersList');
+      const triggers = data.triggers || [];
+      list.innerHTML = triggers.map(t => `
+        <div class="trigger-item">
+          <span><strong>${t.name}</strong> ${t.rule_type} ${t.rule_config} | cooldown ${t.cooldown_sec}s | Email ${t.notify_email ? 'Y' : 'N'} SMS ${t.notify_sms ? 'Y' : 'N'} WA ${t.notify_whatsapp ? 'Y' : 'N'} | ${t.enabled ? 'ON' : 'OFF'}</span>
+          <span>
+            <button class="toggle" data-id="${t.id}" data-enabled="${t.enabled}">${t.enabled ? 'Disable' : 'Enable'}</button>
+            <button class="danger delete" data-id="${t.id}">Delete</button>
+          </span>
+        </div>
+      `).join('') || '<p>No triggers.</p>';
+      list.querySelectorAll('.delete').forEach(btn => btn.addEventListener('click', async () => {
+        await API.delete(`/api/analytics/triggers/${btn.dataset.id}`);
+        refreshTriggers();
+      }));
+      list.querySelectorAll('.toggle').forEach(btn => btn.addEventListener('click', async () => {
+        const enabled = btn.dataset.enabled === '1';
+        await API.post(`/api/analytics/triggers/${btn.dataset.id}/toggle`, { enabled: !enabled });
+        refreshTriggers();
+      }));
+    }
+    document.getElementById('btnAddTrigger').addEventListener('click', async () => {
+      const name = document.getElementById('triggerName').value.trim();
+      const rule_type = document.getElementById('triggerRuleType').value;
+      const class_name = document.getElementById('triggerClass').value.trim();
+      if (!name || !class_name) { alert('Name and class_name required'); return; }
+      let rule_config = {};
+      if (rule_type === 'class_detected') {
+        rule_config = { class_name, min_confidence: parseFloat(document.getElementById('triggerMinConf').value) || 0.25 };
+      } else {
+        rule_config = { class_name, count: parseInt(document.getElementById('triggerCount').value, 10) || 1, window_sec: parseInt(document.getElementById('triggerWindow').value, 10) || 60 };
+      }
+      await API.post('/api/analytics/triggers', {
+        name,
+        rule_type,
+        rule_config,
+        cooldown_sec: parseInt(document.getElementById('triggerCooldown').value, 10) || 300,
+        notify_email: document.getElementById('triggerEmail').checked,
+        notify_sms: document.getElementById('triggerSms').checked,
+        notify_whatsapp: document.getElementById('triggerWhatsapp').checked
+      });
+      refreshTriggers();
+    });
+
+    async function refreshNotifyConfig() {
+      const c = await API.get('/api/analytics/notify-config');
+      document.getElementById('emailConfig').textContent = c.email_configured ? 'Email configured' : 'Email not configured';
+      document.getElementById('emailConfig').className = c.email_configured ? 'config-ok' : 'config-missing';
+      document.getElementById('smsConfig').textContent = c.sms_configured ? 'SMS configured' : 'SMS not configured';
+      document.getElementById('smsConfig').className = c.sms_configured ? 'config-ok' : 'config-missing';
+      document.getElementById('whatsappConfig').textContent = c.whatsapp_configured ? 'WhatsApp configured' : 'WhatsApp not configured';
+      document.getElementById('whatsappConfig').className = c.whatsapp_configured ? 'config-ok' : 'config-missing';
+      document.getElementById('btnTestWhatsapp').disabled = !c.whatsapp_configured;
+    }
+
+    document.getElementById('btnTestWhatsapp').addEventListener('click', async () => {
+      const el = document.getElementById('whatsappTestResult');
+      el.textContent = 'Sending…';
+      try {
+        const r = await fetch('/api/analytics/test-whatsapp', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const j = await r.json();
+        el.textContent = j.ok ? 'Sent.' : (j.message || 'Failed');
+        el.style.color = j.ok ? 'green' : 'red';
+      } catch (e) {
+        el.textContent = 'Error: ' + e.message;
+        el.style.color = 'red';
+      }
+    });
+
+    document.getElementById('btnSendTestAlert').addEventListener('click', async () => {
+      const el = document.getElementById('testAlertResult');
+      el.textContent = 'Sending…';
+      try {
+        const r = await fetch('/api/analytics/send-test-alert', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const j = await r.json();
+        el.textContent = j.ok ? 'Sent.' : (j.message || 'Failed');
+        el.style.color = j.ok ? 'green' : 'red';
+      } catch (e) {
+        el.textContent = 'Error: ' + e.message;
+        el.style.color = 'red';
+      }
+    });
+
+    document.getElementById('btnTriggerStatus').addEventListener('click', async () => {
+      const summary = document.getElementById('triggerStatusSummary');
+      const detail = document.getElementById('triggerStatusDetail');
+      summary.textContent = 'Loading…';
+      detail.style.display = 'none';
+      try {
+        const j = await API.get('/api/analytics/trigger-status');
+        const t = j.triggers || [];
+        const running = j.capture_running ? 'Capture running' : 'Capture not running';
+        const wa = j.whatsapp_configured ? 'WhatsApp OK' : 'WhatsApp not configured';
+        summary.textContent = running + '. ' + wa + (t.length ? '. ' + t.length + ' trigger(s).' : '');
+        summary.style.color = j.capture_running && j.whatsapp_configured ? 'green' : '#fa0';
+        detail.textContent = JSON.stringify({ triggers: t, capture_running: j.capture_running, whatsapp_configured: j.whatsapp_configured }, null, 2);
+        detail.style.display = 'block';
+      } catch (e) {
+        summary.textContent = 'Error: ' + e.message;
+        summary.style.color = 'red';
+      }
+    });
+
+    async function refreshAlertConfig() {
+      try {
+        const c = await API.get('/api/analytics/alert-config');
+        document.getElementById('alertMessageTemplate').value = c.message_template || 'Alert: {trigger_name} - {message}';
+        document.getElementById('alertIncludeFrame').checked = !!c.include_frame_with_whatsapp;
+        document.getElementById('alertPublicBaseUrl').value = c.public_base_url || '';
+      } catch (e) {
+        console.warn('Alert config load failed', e);
+      }
+    }
+
+    document.getElementById('btnSaveAlertConfig').addEventListener('click', async () => {
+      const el = document.getElementById('alertConfigResult');
+      el.textContent = 'Saving…';
+      el.style.color = '';
+      try {
+        const r = await fetch('/api/analytics/alert-config', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message_template: document.getElementById('alertMessageTemplate').value.trim() || 'Alert: {trigger_name} - {message}',
+            include_frame_with_whatsapp: document.getElementById('alertIncludeFrame').checked,
+            public_base_url: document.getElementById('alertPublicBaseUrl').value.trim()
+          })
+        });
+        const j = await r.json();
+        el.textContent = 'Saved.';
+        el.style.color = 'green';
+      } catch (e) {
+        el.textContent = 'Error: ' + e.message;
+        el.style.color = 'red';
+      }
+    });
+
+    refreshCaptureStatus();
+    refreshTriggers();
+    refreshNotifyConfig();
+    refreshAlertConfig();
+  </script>
+</body>
+</html>

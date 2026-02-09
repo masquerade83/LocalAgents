@@ -1,0 +1,17 @@
+Inference on captured feed — 2026-02-08T10:35:21.545933
+Frames: 150  Conf: 0.05  Weights: /Users/shailja/clawd/object_detection_working/training/runs/detect/runs/detect/custom_yolo10/weights/best.pt
+
+Per-class totals:
+  ac: 150
+  artwork: 2042
+  book: 5774
+  bottle: 2
+  box: 61
+  cup: 0
+  curtain: 1135
+  fan: 178
+  lamp: 1645
+  person: 0
+
+Total detections: 10987
+Frames with ≥1 detection: 150/150

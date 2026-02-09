@@ -1,0 +1,4 @@
+# Env and secrets (recipients + SMTP/Twilio credentials)
+.env
+# Alert frame captures (optional; created when trigger fires with "attach frame")
+analytics/alert_frames/

@@ -1,0 +1,5 @@
+{
+  "message_template": "Alert:1 or more persons are detected.",
+  "include_frame_with_whatsapp": true,
+  "public_base_url": "https://noncirculatory-mooned-lawanda.ngrok-free.dev"
+}

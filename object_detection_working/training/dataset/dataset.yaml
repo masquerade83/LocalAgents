@@ -1,0 +1,17 @@
+# From Roboflow YOLO export data.yaml (exact order = class ID 0-9)
+names:
+  - ac
+  - artwork
+  - book
+  - bottle
+  - box
+  - cup
+  - curtain
+  - fan
+  - lamp
+  - person
+nc: 10
+path: /Users/shailja/clawd/object_detection_working/training/dataset
+test: test/images
+train: train/images
+val: val/images

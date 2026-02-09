@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug MJPEG Stream</title>
+    <style>
+        body {
+            background: #000;
+            margin: 0;
+            padding: 20px;
+            color: white;
+            font-family: monospace;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #0f0;
+        }
+        .info {
+            margin: 20px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MJPEG Stream Debug</h1>
+    <div class="info">
+        <p>Stream URL: <span id="url"></span></p>
+        <p>Test frame: <button type="button" id="btnTestFrame">Load test image</button> <span id="testFrameStatus"></span></p>
+        <p>Status: <span id="status">Loading...</span></p>
+    </div>
+    <img id="stream" src="" alt="Stream">
+    
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const streamUrl = params.get('url') || '/api/stream/mjpeg?url=rtsp://kush.sood:admin%40123@192.168.29.221/stream1&yolo=true&confidence=0.25';
+        const headers = { 'ngrok-skip-browser-warning': 'true' };
+        
+        document.getElementById('url').textContent = streamUrl;
+        const img = document.getElementById('stream');
+        const statusEl = document.getElementById('status');
+        
+        document.getElementById('btnTestFrame').onclick = async () => {
+            const st = document.getElementById('testFrameStatus');
+            st.textContent = '…';
+            try {
+                const r = await fetch('/api/stream/test-frame', { headers });
+                const ct = r.headers.get('Content-Type') || '';
+                const blob = await r.blob();
+                if (ct.includes('image') && blob.size > 50) {
+                    img.src = URL.createObjectURL(blob);
+                    st.textContent = 'OK (' + blob.size + ' bytes)';
+                    st.style.color = '#0f0';
+                } else {
+                    st.textContent = 'Got ' + ct + ' (' + blob.size + ' bytes) - not image?';
+                    st.style.color = '#fa0';
+                }
+            } catch (e) {
+                st.textContent = 'Error: ' + e.message;
+                st.style.color = '#f00';
+            }
+        };
+        
+        const isTunnel = /ngrok|\.loca\.lt/i.test(location.hostname);
+        if (isTunnel) {
+            statusEl.textContent = 'Tunnel detected - use fetch with header. Click "Load test image" first to verify tunnel.';
+            fetch(streamUrl, { headers }).then(r => {
+                const ct = (r.headers.get('Content-Type') || '').toLowerCase();
+                if (ct.includes('text/html')) {
+                    statusEl.textContent = 'Ngrok returned HTML. Open this page in a new tab, click Visit Site, then reload.';
+                    statusEl.style.color = '#fa0';
+                } else if (r.body) {
+                    statusEl.textContent = 'Stream response OK (multipart). Parsing would run in main viewer.';
+                    statusEl.style.color = '#0f0';
+                }
+                return r.body.getReader().read();
+            }).then(() => {}).catch(e => {
+                statusEl.textContent = 'Error: ' + e.message;
+                statusEl.style.color = '#f00';
+            });
+        } else {
+            img.onload = () => { statusEl.textContent = '✅ Stream loaded'; statusEl.style.color = '#0f0'; };
+            img.onerror = () => { statusEl.textContent = '❌ Stream error'; statusEl.style.color = '#f00'; };
+            img.src = streamUrl;
+        }
+    </script>
+</body>
+</html>

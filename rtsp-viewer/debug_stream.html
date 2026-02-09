@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug MJPEG Stream</title>
+    <style>
+        body {
+            background: #000;
+            margin: 0;
+            padding: 20px;
+            color: white;
+            font-family: monospace;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #0f0;
+        }
+        .info {
+            margin: 20px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MJPEG Stream Debug</h1>
+    <div class="info">
+        <p>Stream URL: <span id="url"></span></p>
+        <p>Status: <span id="status">Loading...</span></p>
+    </div>
+    <img id="stream" src="" alt="Stream">
+    
+    <script>
+        // Get URL from query parameter or use default
+        const params = new URLSearchParams(window.location.search);
+        const streamUrl = params.get('url') || '/api/stream/mjpeg?url=rtsp://kush.sood:admin@123@192.168.29.221/stream1&yolo=true&confidence=0.25';
+        
+        document.getElementById('url').textContent = streamUrl;
+        const img = document.getElementById('stream');
+        
+        img.onload = () => {
+            document.getElementById('status').textContent = '✅ Stream loaded';
+            document.getElementById('status').style.color = '#0f0';
+        };
+        
+        img.onerror = (e) => {
+            document.getElementById('status').textContent = '❌ Stream error - check console';
+            document.getElementById('status').style.color = '#f00';
+            console.error('Stream error:', e);
+        };
+        
+        // Set source
+        img.src = streamUrl;
+        console.log('Loading stream from:', streamUrl);
+    </script>
+</body>
+</html>

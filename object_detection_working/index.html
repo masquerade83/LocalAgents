@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTSP Stream Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📹 RTSP Stream Viewer</h1>
+            <div class="controls">
+                <input type="text" id="rtspUrl" placeholder="rtsp://username:password@ip:port/stream" value="">
+                <button id="connectBtn">Connect</button>
+                <button id="disconnectBtn" disabled>Disconnect</button>
+                <label class="yolo-toggle">
+                    <input type="checkbox" id="yoloEnabled" checked>
+                    <span>YOLO Detection</span>
+                </label>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <span style="color: white; font-size: 12px;">Confidence:</span>
+                    <input type="range" id="confidenceSlider" min="0.05" max="0.9" step="0.05" value="0.05" style="width: 120px;">
+                    <span id="confidenceValue" style="color: white; font-size: 14px; min-width: 35px;">0.05</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="video-container">
+            <div id="status" class="status">Enter RTSP URL and click Connect</div>
+            <video id="videoPlayer" controls autoplay muted playsinline style="display: none;">
+                Your browser does not support the video tag.
+            </video>
+            <canvas id="canvasPlayer" style="display: none;"></canvas>
+            <!-- MJPEG stream will be inserted here as img element -->
+        </div>
+        
+        <div class="info">
+            <h3>Quick Setup:</h3>
+            <ul>
+                <li>Enter your RTSP stream URL (e.g., <code>rtsp://user:pass@192.168.1.100:554/stream</code>)</li>
+                <li>Click Connect to start viewing</li>
+                <li>The stream will be converted to a browser-compatible format</li>
+                <li>Using a tunnel (ngrok)? Add <code>?debug=1</code> to the URL to see frame count in the console.</li>
+            </ul>
+            <h3>YOLO Model:</h3>
+            <div id="modelInfo">Loading…</div>
+            <h3>Stream Info:</h3>
+            <div id="streamInfo">No stream connected</div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
