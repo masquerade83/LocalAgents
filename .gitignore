@@ -29,9 +29,16 @@ object_detection_working/training/.labelenv/
 .DS_Store
 Thumbs.db
 
+# Local RAG (Chroma persistence)
+rag/chroma_db/
+rag/_ci_chroma/
+rag/_test_chroma_e2e/
+rag/_smoke_test_chroma/
+
 # Logs and local state
 *.log
 memory/heartbeat-state.json
+ZOHO_Local/zoho_crm.env
 
 # Training datasets and captured frames (large; use Git LFS or separate storage if needed)
 object_detection_working/training/dataset/images/
@@ -46,3 +53,8 @@ object_detection_working/analytics/analytics.db
 *.pt
 *.onnx
 *.cache
+
+# LLM fine-tuning outputs (adapters, merged weights, GGUF)
+llm-finetune/output/
+llm-finetune/.venv/
+*.gguf
