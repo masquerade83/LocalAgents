@@ -149,6 +149,37 @@ cp ~/.hermes/config.workingwithoutLiteLLM.yaml ~/.hermes/config.yaml
 hermes gateway restart
 ```
 
+## Troubleshooting
+
+### "Model provider failed after retries" (Telegram)
+
+Usually LiteLLM is down. Check:
+
+```bash
+curl -s http://127.0.0.1:4000/health/liveliness   # expect "I'm alive!"
+tail -30 ~/.hermes/logs/errors.log                # look for APIConnectionError to :4000
+launchctl list | grep litellm                     # ai.hermes.litellm should be running
+```
+
+**launchd service:** `~/Library/LaunchAgents/ai.hermes.litellm.plist` runs `~/.local/bin/litellm` directly with `WorkingDirectory` set to `~/.hermes` (not `Documents/` — macOS blocks that path for background agents).
+
+Restart:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/ai.hermes.litellm
+hermes gateway restart
+```
+
+### Empty responses from qwen3-vl
+
+Qwen3-VL can return thinking in a `reasoning` field with empty `content` through the OpenAI-compat API. Hermes config uses `reasoning_effort: none` to send `think: false`. If replies are still empty, switch temporarily:
+
+```
+/model llama3
+```
+
+(`llama3` works reliably via LiteLLM; use `qwen3-vl` when vision is needed.)
+
 Expected gateway log lines:
 
 - `Connected to Telegram (polling mode)`
