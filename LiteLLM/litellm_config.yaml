@@ -1,0 +1,21 @@
+model_list:
+  - model_name: qwen3-vl
+    litellm_params:
+      model: ollama/qwen3-vl
+      api_base: http://127.0.0.1:11434
+  - model_name: deepseek-ocr
+    litellm_params:
+      model: ollama/deepseek-ocr
+      api_base: http://127.0.0.1:11434
+  - model_name: hermes3
+    litellm_params:
+      model: ollama/hermes3:8b
+      api_base: http://127.0.0.1:11434
+  - model_name: llama3
+    litellm_params:
+      model: ollama/llama3
+      api_base: http://127.0.0.1:11434
+
+general_settings:
+  master_key: admin
+  database_url: postgresql://litellm:litellm@127.0.0.1:5432/litellm
