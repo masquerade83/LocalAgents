@@ -67,3 +67,4 @@ whitepapers/*.pdf
 whitepapers/**/*.pdf
 neo4j/whitepapers/.cache/
 neo4j/whitepapers/.venv/
+knowledge/.venv/
