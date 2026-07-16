@@ -19,3 +19,4 @@ model_list:
 general_settings:
   master_key: admin
   database_url: postgresql://litellm:litellm@127.0.0.1:5432/litellm
+  store_model_in_db: true

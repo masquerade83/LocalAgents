@@ -61,6 +61,11 @@ export DATABASE_URL
 export UI_USERNAME="${UI_USERNAME:-admin}"
 export UI_PASSWORD="${UI_PASSWORD:-admin}"
 
+# Vision via Ollama requires Pillow in the LiteLLM venv.
+if command -v uv >/dev/null 2>&1; then
+  uv pip install --python "$HOME/.local/share/uv/tools/litellm/bin/python" Pillow prisma >/dev/null 2>&1 || true
+fi
+
 echo "Starting LiteLLM proxy (config=${CONFIG}, port=${PORT})"
 if [[ "${LITELLM_FOREGROUND:-}" == "1" ]]; then
   echo "Running LiteLLM in foreground (launchd mode)"

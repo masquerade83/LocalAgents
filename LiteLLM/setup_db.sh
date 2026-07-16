@@ -14,8 +14,8 @@ for _ in $(seq 1 30); do
   sleep 1
 done
 
-echo "Installing prisma Python client (if missing)..."
-uv pip install --python "$HOME/.local/share/uv/tools/litellm/bin/python" prisma >/dev/null 2>&1 || true
+echo "Installing prisma + Pillow (if missing)..."
+uv pip install --python "$HOME/.local/share/uv/tools/litellm/bin/python" prisma Pillow >/dev/null 2>&1 || true
 
 echo "Generating Prisma client..."
 cd "$(dirname "$SCHEMA")"
