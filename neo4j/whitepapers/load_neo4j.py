@@ -9,6 +9,7 @@ from typing import Any
 
 from neo4j import GraphDatabase
 
+from concept_cleanup import clean_concepts, normalize_concept_name
 from config import NEO4J_PASSWORD, NEO4J_URI, NEO4J_USER, SCHEMA_PATH
 from extract_pdf import slugify
 
@@ -127,7 +128,8 @@ class Neo4jLoader:
                     paper_id=paper_id,
                 )
 
-            for concept in paper.get("concepts") or []:
+            concepts = clean_concepts(paper.get("concepts") or [])
+            for concept in concepts:
                 name = str(concept.get("name", "")).strip()
                 if not name:
                     continue
@@ -161,7 +163,7 @@ class Neo4jLoader:
                     )
 
                 for related_name in concept.get("related_to") or []:
-                    related_name = str(related_name).strip()
+                    related_name = normalize_concept_name(str(related_name).strip()) or ""
                     if not related_name or related_name.lower() == name.lower():
                         continue
                     session.run(
