@@ -170,21 +170,41 @@ launchctl kickstart -k gui/$(id -u)/ai.hermes.litellm
 hermes gateway restart
 ```
 
-### Empty responses from qwen3-vl
+### Empty responses from qwen3-vl (image / OCR)
 
-Qwen3-VL can return thinking in a `reasoning` field with empty `content` through the OpenAI-compat API. Hermes config uses `reasoning_effort: none` to send `think: false`. If replies are still empty, switch temporarily:
+**Root cause:** LiteLLM's `ollama/qwen3-vl` provider uses Ollama's `/api/generate` path, which **drops or mishandles vision `image_url` blocks** → empty `content`. Text chat via LiteLLM works; only vision was broken.
 
+**Fix in `LiteLLM/litellm_config.yaml`:**
+
+```yaml
+model: ollama_chat/qwen3-vl   # NOT ollama/qwen3-vl
 ```
-/model llama3
+
+`ollama_chat` uses `/api/chat` and preserves images correctly.
+
+**Hermes notes (`~/.hermes/config.yaml`):**
+
+- Default: `qwen3-vl` via `custom:litellm`
+- **Do not** set `agent.reasoning_effort: none` for qwen3-vl — maps to `think:false` and can return empty content
+- `qwen3-vl` needs sufficient `max_tokens` (~500+ for short text; ~4000 for OCR)
+
+After config changes:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/ai.hermes.litellm
+hermes gateway restart
 ```
 
-(`llama3` works reliably via LiteLLM; use `qwen3-vl` when vision is needed.)
+Then in Telegram: `/reset` and resend the image.
 
-Expected gateway log lines:
+Expected gateway log: `Image routing: native (model supports vision).`
 
-- `Connected to Telegram (polling mode)`
-- `Gateway running with 1 platform(s)`
-- `Image routing: native (model supports vision)`
+**Verified smoke test (via `:4000`):**
+
+| Test | Result |
+|------|--------|
+| qwen3-vl text (`max_tokens=500`) | `Hello` ✓ |
+| qwen3-vl vision OCR (`max_tokens=4000`) | ~1033 chars Sanskrit/English ✓ |
 
 ## Integrations
 

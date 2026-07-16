@@ -1,8 +1,12 @@
 model_list:
   - model_name: qwen3-vl
     litellm_params:
-      model: ollama/qwen3-vl
+      # ollama_chat uses /api/chat and preserves vision image_url blocks.
+      # ollama/ (generate) drops or mishandles VL images → empty content.
+      model: ollama_chat/qwen3-vl
       api_base: http://127.0.0.1:11434
+      model_info:
+        supports_vision: true
   - model_name: deepseek-ocr
     litellm_params:
       model: ollama/deepseek-ocr
