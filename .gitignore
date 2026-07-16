@@ -61,3 +61,9 @@ object_detection_working/analytics/analytics.db
 llm-finetune/output/
 llm-finetune/.venv/
 *.gguf
+
+# Whitepaper corpus (private PDFs)
+whitepapers/*.pdf
+whitepapers/**/*.pdf
+neo4j/whitepapers/.cache/
+neo4j/whitepapers/.venv/
