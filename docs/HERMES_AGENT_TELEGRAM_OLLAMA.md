@@ -39,7 +39,7 @@ User (Telegram) → Telegram Bot API → Hermes Gateway (~/.hermes)
 | Hermes config | `~/.hermes/config.yaml` | Model, toolsets, Telegram policy |
 | Hermes secrets | `~/.hermes/.env` | Tokens and env overrides |
 | Agent install | `~/.hermes/hermes-agent/` | NousResearch Hermes Agent |
-| Working directory | `/Users/shailja/Documents/Kush/P_Project/Hermes_Working_Directory/` | Terminal/file tool CWD |
+| Working directory | `/Users/shailja/Documents/Kush` | Terminal/file tool CWD; list & share root |
 | LiteLLM proxy | `http://127.0.0.1:4000` | OpenAI-compat: `/v1`; master key in env |
 | Ollama API | `http://127.0.0.1:11434` | Backend for LiteLLM |
 | Default LLM | **Qwen3-VL 8.8B** (`qwen3-vl:latest`) | Vision + OCR; 6.1 GB |
@@ -206,6 +206,98 @@ Expected gateway log: `Image routing: native (model supports vision).`
 | qwen3-vl text (`max_tokens=500`) | `Hello` ✓ |
 | qwen3-vl vision OCR (`max_tokens=4000`) | ~1033 chars Sanskrit/English ✓ |
 
+## Local file access (Kush folder)
+
+Hermes can list and share files from `/Users/shailja/Documents/Kush` over Telegram.
+
+### Configuration
+
+`~/.hermes/config.yaml`:
+
+```yaml
+terminal:
+  cwd: /Users/shailja/Documents/Kush
+
+gateway:
+  strict: false
+  media_delivery_allow_dirs:
+    - /Users/shailja/Documents/Kush
+
+skills:
+  pinned:
+    - kush-file-share
+```
+
+Project instructions: `/Users/shailja/Documents/Kush/.hermes.md`  
+Skill: `~/.hermes/skills/productivity/kush-file-share/SKILL.md`
+
+### How it works
+
+1. **List** — agent uses `search_files(target='files')` under the Kush root.
+2. **Share** — agent includes a **bare absolute path** (or `MEDIA:` tag) in the reply; the gateway's `extract_local_files` attaches it to Telegram.
+
+### Example Telegram prompts
+
+| Prompt | Expected behavior |
+|--------|-------------------|
+| `List files in P_Project` | Numbered list of files (text only) |
+| `Send me P_Project/report.pdf` | File attached as document |
+| `Share the latest image in Photos` | Most recent image sent |
+
+### Delivery rules
+
+- Paths must be **outside** code fences/backticks to trigger auto-delivery.
+- Files over 45 MB may fail (Telegram bot limit).
+- Credential files (`.env`, keys, tokens) are denylisted in `.hermes.md` and the skill.
+
+After config changes: `hermes gateway restart`, then `/reset` in Telegram.
+
+## n8n workflows (Hermes stack)
+
+Docker container `n8n` on port `5678`. Workflows are deployed via Python scripts in `~/.hermes/bin/` using the n8n API (`N8N_API_KEY` in `~/.config/n8n-mcp/env`).
+
+| Workflow | Webhook | Deploy script |
+|----------|---------|---------------|
+| **Stack Health Check (Hermes)** | `GET http://127.0.0.1:5678/webhook/stack-health` | `~/.hermes/bin/create-n8n-health-workflow.py` |
+| **Hermes LLM Task Template (LiteLLM)** | `POST http://127.0.0.1:5678/webhook/hermes-llm-task` | `~/.hermes/bin/create-n8n-llm-template-workflow.py` |
+
+### Stack health check
+
+Probes (from inside the n8n container via `host.docker.internal`):
+
+- LiteLLM liveliness: `GET :4000/health/liveliness`
+- LiteLLM models: `GET :4000/v1/models` with `Authorization: Bearer admin`
+- Ollama backend: `GET :11434/api/tags`
+- n8n self: `GET :5678/healthz`
+
+```bash
+python3 ~/.hermes/bin/create-n8n-health-workflow.py
+curl -s http://127.0.0.1:5678/webhook/stack-health | python3 -m json.tool
+```
+
+### LLM task template (LiteLLM routing)
+
+Routes OCR and summary tasks through LiteLLM (`http://host.docker.internal:4000/v1/chat/completions`, Bearer `admin`) — **not** direct Ollama.
+
+| `task` | LiteLLM model | Notes |
+|--------|---------------|-------|
+| `ocr` | `deepseek-ocr` | Optional `image_url` for vision OCR |
+| `summary` | `llama3` (default) or `hermes3` | Set `"model": "hermes3"` to override |
+
+```bash
+python3 ~/.hermes/bin/create-n8n-llm-template-workflow.py
+
+# Summary via llama3
+curl -s -X POST http://127.0.0.1:5678/webhook/hermes-llm-task \
+  -H 'Content-Type: application/json' \
+  -d '{"task":"summary","text":"Summarize in one sentence: LiteLLM proxies Ollama for Hermes."}'
+
+# OCR smoke (text-only; add image_url for real OCR)
+curl -s -X POST http://127.0.0.1:5678/webhook/hermes-llm-task \
+  -H 'Content-Type: application/json' \
+  -d '{"task":"ocr","text":"Extract all visible text."}'
+```
+
 ## Integrations
 
 | Integration | Status |
@@ -214,6 +306,7 @@ Expected gateway log: `Image routing: native (model supports vision).`
 | LiteLLM | Proxy at `127.0.0.1:4000` → Ollama |
 | Ollama | Local at `127.0.0.1:11434` |
 | n8n MCP | Enabled (`~/.hermes/mcp-installs/n8n/`) |
+| n8n workflows | Health + LLM template webhooks (see above) |
 | WhatsApp | Enabled but not paired |
 | Home Assistant | Retrying connection |
 | clawd RAG | Separate project at `clawd/rag/` |
