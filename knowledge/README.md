@@ -80,5 +80,6 @@ See `.env.example` — key vars:
 
 ## Related
 
+- **[TESTING_AND_TUNING.md](TESTING_AND_TUNING.md)** — how to test, evaluate, and tune GraphRAG
 - [neo4j/whitepapers/](../neo4j/whitepapers/) — graph ingest pipeline
 - Notion: Neo4J - KG - GraphRAG

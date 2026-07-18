@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LAN Control Plane</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>LAN Control Plane</h1>
+          <p class="sub">Home network inventory · 192.168.29.0/24</p>
+        </div>
+      </div>
+      <div class="actions">
+        <label class="toggle">
+          <input type="checkbox" id="pingSweep" checked />
+          <span>Ping sweep</span>
+        </label>
+        <button type="button" id="scanBtn" class="primary">Scan network</button>
+      </div>
+    </header>
+
+    <section class="stats" id="stats">
+      <div class="stat"><span class="label">Devices</span><span class="value" id="statCount">—</span></div>
+      <div class="stat"><span class="label">Gateway</span><span class="value mono" id="statGateway">—</span></div>
+      <div class="stat"><span class="label">This host</span><span class="value mono" id="statLocal">—</span></div>
+      <div class="stat"><span class="label">Last scan</span><span class="value mono" id="statTime">never</span></div>
+    </section>
+
+    <p class="status" id="status" role="status"></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Name</th>
+            <th>IP</th>
+            <th>MAC</th>
+            <th>Hostname</th>
+            <th>Room</th>
+            <th>Tags</th>
+            <th>Caps</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr class="empty"><td colspan="8">No scan yet. Hit Scan network.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="foot">
+      Phase 1 · discovery + registry · adapters (Homey, RTSP) next
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
