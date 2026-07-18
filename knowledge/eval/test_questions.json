@@ -1,0 +1,416 @@
+{
+  "version": 1,
+  "created": "2026-07-17",
+  "questions": [
+    {
+      "id": "o_ran",
+      "question": "Which papers mention O-RAN AI/ML use cases?",
+      "expected_papers": [
+        "o-ran-ai-ml-usecase",
+        "o-ran",
+        "openran"
+      ],
+      "expected_titles": [
+        "O-RAN",
+        "OpenRAN"
+      ]
+    },
+    {
+      "id": "telcogpt",
+      "question": "What is TelcoGPT's approach to building telecom-specific LLMs?",
+      "expected_papers": [
+        "telcogpt",
+        "telecomgpt"
+      ],
+      "expected_titles": [
+        "TelcoGPT",
+        "TelecomGPT"
+      ]
+    },
+    {
+      "id": "gpu_5g",
+      "question": "What GPU acceleration techniques are used in 5G RAN?",
+      "expected_papers": [
+        "gpu-accelerated-5g-ran",
+        "gpu"
+      ],
+      "expected_titles": [
+        "GPU",
+        "5G"
+      ]
+    },
+    {
+      "id": "telco_llm_problems",
+      "question": "What are telco-specific LLM problems and techniques?",
+      "expected_papers": [
+        "telco-specific-llm",
+        "telco_specific",
+        "telco-specific"
+      ],
+      "expected_titles": [
+        "Telco",
+        "LLM",
+        "Techniques"
+      ]
+    },
+    {
+      "id": "telecom_language",
+      "question": "How can LLMs help understand telecom language?",
+      "expected_papers": [
+        "telecom-language",
+        "telecom_language"
+      ],
+      "expected_titles": [
+        "Telecom",
+        "Language",
+        "LLM"
+      ]
+    }
+  ],
+  "results": {
+    "retrieval": [
+      {
+        "id": "o_ran",
+        "question": "Which papers mention O-RAN AI/ML use cases?",
+        "hybrid": {
+          "hit_at_3": false,
+          "top_3": [
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "TelecomGPT: A Framework to Build (telcogpt)",
+            "TelecomGPT: A Framework to Build (telcogpt)"
+          ],
+          "paper_filter": [
+            "o-ran-ai-ml-usecase",
+            "gpu-accelerated-5g-ran",
+            "telcogpt",
+            "telco-specific-llm-problems-techniques"
+          ],
+          "matched_concepts": [
+            "O-RAN",
+            "ColO-RAN",
+            "ColO-RAN xApp",
+            "AI/ML",
+            "AI/ML Model"
+          ],
+          "passage_count": 8,
+          "elapsed_s": 0.65
+        },
+        "vector_only": {
+          "hit_at_3": false,
+          "top_3": [
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "TelecomGPT: A Framework to Build (telcogpt)",
+            "TelecomGPT: A Framework to Build (telcogpt)"
+          ],
+          "paper_filter": null,
+          "matched_concepts": [],
+          "passage_count": 8,
+          "elapsed_s": 0.05
+        }
+      },
+      {
+        "id": "telcogpt",
+        "question": "What is TelcoGPT's approach to building telecom-specific LLMs?",
+        "hybrid": {
+          "hit_at_3": false,
+          "top_3": [
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)"
+          ],
+          "paper_filter": [
+            "o-ran-ai-ml-usecase",
+            "telcogpt",
+            "telco-specific-llm-problems-techniques",
+            "telecom-language-through-llms"
+          ],
+          "matched_concepts": [
+            "CoT Approach",
+            "DNN Approaches",
+            "CNN Approaches",
+            "Building Distributions",
+            "Blockage Building Detection"
+          ],
+          "passage_count": 8,
+          "elapsed_s": 0.12
+        },
+        "vector_only": {
+          "hit_at_3": false,
+          "top_3": [
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)"
+          ],
+          "paper_filter": null,
+          "matched_concepts": [],
+          "passage_count": 8,
+          "elapsed_s": 0.05
+        }
+      },
+      {
+        "id": "gpu_5g",
+        "question": "What GPU acceleration techniques are used in 5G RAN?",
+        "hybrid": {
+          "hit_at_3": true,
+          "top_3": [
+            "GPU Accelerated (gpu-accelerated-5g-ran)",
+            "OpenRAN Gym: AI/ML Development, Data Collection, (o-ran-ai-ml-usecase)",
+            "OpenRAN Gym: AI/ML Development, Data Collection, (o-ran-ai-ml-usecase)"
+          ],
+          "paper_filter": [
+            "gpu-accelerated-5g-ran",
+            "o-ran-ai-ml-usecase",
+            "telcogpt",
+            "telco-specific-llm-problems-techniques",
+            "telecom-language-through-llms"
+          ],
+          "matched_concepts": [
+            "SRN GPU",
+            "L40S GPU",
+            "Local GPU",
+            "GPU Acceleration",
+            "GPU-based Acceleration"
+          ],
+          "passage_count": 8,
+          "elapsed_s": 0.08
+        },
+        "vector_only": {
+          "hit_at_3": true,
+          "top_3": [
+            "GPU Accelerated (gpu-accelerated-5g-ran)",
+            "OpenRAN Gym: AI/ML Development, Data Collection, (o-ran-ai-ml-usecase)",
+            "OpenRAN Gym: AI/ML Development, Data Collection, (o-ran-ai-ml-usecase)"
+          ],
+          "paper_filter": null,
+          "matched_concepts": [],
+          "passage_count": 8,
+          "elapsed_s": 0.04
+        }
+      },
+      {
+        "id": "telco_llm_problems",
+        "question": "What are telco-specific LLM problems and techniques?",
+        "hybrid": {
+          "hit_at_3": true,
+          "top_3": [
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)"
+          ],
+          "paper_filter": [
+            "telcogpt",
+            "telco-specific-llm-problems-techniques",
+            "telecom-language-through-llms"
+          ],
+          "matched_concepts": [
+            "LLM4TS",
+            "Llm-qat",
+            "LLM-QAT",
+            "Prediction Problems",
+            "Generation Problems"
+          ],
+          "passage_count": 8,
+          "elapsed_s": 0.07
+        },
+        "vector_only": {
+          "hit_at_3": true,
+          "top_3": [
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)"
+          ],
+          "paper_filter": null,
+          "matched_concepts": [],
+          "passage_count": 8,
+          "elapsed_s": 0.04
+        }
+      },
+      {
+        "id": "telecom_language",
+        "question": "How can LLMs help understand telecom language?",
+        "hybrid": {
+          "hit_at_3": true,
+          "top_3": [
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)"
+          ],
+          "paper_filter": [
+            "telco-specific-llm-problems-techniques",
+            "telcogpt",
+            "telecom-language-through-llms"
+          ],
+          "matched_concepts": [
+            "Candidate Algorithms",
+            "Finance LLMs",
+            "Healthcare LLMs",
+            "Fine-tuned LLMs",
+            "Genuine Understanding"
+          ],
+          "passage_count": 8,
+          "elapsed_s": 0.05
+        },
+        "vector_only": {
+          "hit_at_3": true,
+          "top_3": [
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)",
+            "Large Language Model (LLM) for (telco-specific-llm-problems-techniques)"
+          ],
+          "paper_filter": null,
+          "matched_concepts": [],
+          "passage_count": 8,
+          "elapsed_s": 0.03
+        }
+      }
+    ],
+    "qa": [
+      {
+        "id": "o_ran",
+        "question": "Which papers mention O-RAN AI/ML use cases?",
+        "answer_preview": "1. The paper \"OpenRAN Gym: AI/ML Development, Data Collection, and Testing for O-RAN on PAWR Platforms\" mentions use cases related to AI/ML in the context of O-RAN, specifically using tools like Massive Channel Emulator (MCHEM) and NI USRP X310 POWDER (UE).\n\n2. Sources:\n   - Paper: OpenRAN Gym: AI/ML Development, Data Collection, and Testing for O-RAN on PAWR Platforms [Section: Massive Channel Emulator (MCHEM)]\n   - Paper: OpenRAN Gym: AI/ML Development, Data Collection, and Testing for O-RAN o",
+        "scores": {
+          "correctness": 2,
+          "grounded": 2,
+          "completeness": 2,
+          "source_citation": 2,
+          "total": 8
+        },
+        "elapsed_s": 5.98,
+        "retrieval_filter": [
+          "o-ran-ai-ml-usecase",
+          "gpu-accelerated-5g-ran",
+          "telcogpt",
+          "telco-specific-llm-problems-techniques"
+        ],
+        "top_passage": "Large Language Model (LLM) for"
+      },
+      {
+        "id": "telcogpt",
+        "question": "What is TelcoGPT's approach to building telecom-specific LLMs?",
+        "answer_preview": "1. Answer: TelecomGPT uses instruct tuning and alignment tuning with telecom-specific tasks to build telecom-specific LLMs, providing precise and concise answers compared to general-purpose LLMs.\n\n2. Sources:\n   - Paper: TelecomGPT: A Framework to Build | Section: Comparison of generated answers for questions in telecom domain.\n   - Paper: TelecomGPT: A Framework to Build | Section: Comparison of generated response for instruction task in telecom patent.\n\n3. Related concepts from graph: Large La",
+        "scores": {
+          "correctness": 2,
+          "grounded": 2,
+          "completeness": 2,
+          "source_citation": 2,
+          "total": 8
+        },
+        "elapsed_s": 4.11,
+        "retrieval_filter": [
+          "o-ran-ai-ml-usecase",
+          "telcogpt",
+          "telco-specific-llm-problems-techniques",
+          "telecom-language-through-llms"
+        ],
+        "top_passage": "Large Language Model (LLM) for"
+      },
+      {
+        "id": "gpu_5g",
+        "question": "What GPU acceleration techniques are used in 5G RAN?",
+        "answer_preview": "1. GPU acceleration techniques applied in 5G RAN include vector operations, which are well-suited for tasks such as OFDMA processing and MAC PDUs handling. These techniques leverage the parallel processing capabilities of GPUs to achieve significant performance gains.\n\n2. Sources:\n   - Paper: GPU Accelerated | Section: OFDMA\n   - Paper: GPU Accelerated | Section: Further Studies\n\n3. Related concepts from graph: AI-Augmented RAN Processing, MAC Processing, PDSCH Processing",
+        "scores": {
+          "correctness": 2,
+          "grounded": 2,
+          "completeness": 2,
+          "source_citation": 2,
+          "total": 8
+        },
+        "elapsed_s": 3.87,
+        "retrieval_filter": [
+          "gpu-accelerated-5g-ran",
+          "o-ran-ai-ml-usecase",
+          "telcogpt",
+          "telco-specific-llm-problems-techniques",
+          "telecom-language-through-llms"
+        ],
+        "top_passage": "GPU Accelerated"
+      },
+      {
+        "id": "telco_llm_problems",
+        "question": "What are telco-specific LLM problems and techniques?",
+        "answer_preview": "1. Telco-specific LLM problems include understanding and generating configurations that are compatible across diverse environments, adhering to security best practices, and handling complex systems with numerous interdependent components. Techniques involve integrating telecom-specific data into LLM training to enhance the model's ability to understand nuances and complexities of the field, as well as leveraging the outstanding generation capability of LLMs for tasks such as code generation and ",
+        "scores": {
+          "correctness": 2,
+          "grounded": 2,
+          "completeness": 2,
+          "source_citation": 2,
+          "total": 8
+        },
+        "elapsed_s": 5.39,
+        "retrieval_filter": [
+          "telcogpt",
+          "telco-specific-llm-problems-techniques",
+          "telecom-language-through-llms"
+        ],
+        "top_passage": "Large Language Model (LLM) for"
+      },
+      {
+        "id": "telecom_language",
+        "question": "How can LLMs help understand telecom language?",
+        "answer_preview": "1. Answer: Large Language Models (LLMs) can significantly aid in understanding telecom language by incorporating domain-specific knowledge into their training, making them more adept at generating content that is practical and applicable to real-world telecom challenges. This tailored approach ensures that the models not only understand but also apply telecom-specific nuances effectively.\n\n2. Sources:\n   - Large Language Model (LLM) for | Section: A thorough understanding of the above telecom kn",
+        "scores": {
+          "correctness": 2,
+          "grounded": 2,
+          "completeness": 2,
+          "source_citation": 2,
+          "total": 8
+        },
+        "elapsed_s": 5.12,
+        "retrieval_filter": [
+          "telco-specific-llm-problems-techniques",
+          "telcogpt",
+          "telecom-language-through-llms"
+        ],
+        "top_passage": "Large Language Model (LLM) for"
+      }
+    ],
+    "timing": {},
+    "cross_paper": [
+      {
+        "question": "Compare TelcoGPT and the LLM telecommunications survey \u2014 what concepts do they share?",
+        "hybrid_papers": [
+          "telcogpt",
+          "telco-specific-llm-problems-techniques"
+        ],
+        "vector_papers": [
+          "telcogpt",
+          "telco-specific-llm-problems-techniques"
+        ],
+        "hybrid_concepts": [
+          "LLM4TS",
+          "Llm-qat",
+          "LLM-QAT",
+          "Telecommunications Software",
+          "Expert in Telecommunications"
+        ],
+        "hybrid_filter": [
+          "telcogpt",
+          "telco-specific-llm-problems-techniques",
+          "telecom-language-through-llms"
+        ]
+      },
+      {
+        "question": "Which papers discuss both LLM and 5G together?",
+        "hybrid_papers": [
+          "telecom-language-through-llms",
+          "telcogpt"
+        ],
+        "vector_papers": [
+          "telcogpt",
+          "o-ran-ai-ml-usecase"
+        ],
+        "hybrid_concepts": [
+          "LLM4TS",
+          "Llm-qat",
+          "LLM-QAT"
+        ],
+        "hybrid_filter": [
+          "telcogpt",
+          "telco-specific-llm-problems-techniques",
+          "telecom-language-through-llms"
+        ]
+      }
+    ]
+  }
+}
