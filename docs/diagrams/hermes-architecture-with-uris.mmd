@@ -1,0 +1,74 @@
+flowchart TB
+  subgraph entry["Entry points"]
+    TG["Telegram<br/>@DhauladharBot"]
+    N8N_UI["n8n UI<br/>http://127.0.0.1:5678"]
+    N8N_WH1["GET /webhook/stack-health<br/>http://127.0.0.1:5678/webhook/stack-health"]
+    N8N_WH2["POST /webhook/hermes-llm-task<br/>http://127.0.0.1:5678/webhook/hermes-llm-task"]
+    N8N_API["n8n REST API<br/>http://127.0.0.1:5678/api/v1/*"]
+  end
+
+  subgraph control["Control plane"]
+    SW["Hermes Switch<br/>http://127.0.0.1:9120<br/>GET / · GET /api/status<br/>POST /api/start · /api/stop"]
+    DASH["Hermes Dashboard<br/>http://127.0.0.1:9119"]
+  end
+
+  subgraph agent["Agent layer"]
+    GW["Hermes Gateway<br/>launchd: ai.hermes.gateway<br/>~/.hermes/config.yaml"]
+    AGENT["Agent runtime<br/>tools · memory · skills"]
+  end
+
+  subgraph routing["Routing layer"]
+    R_HOST["Model Router<br/>http://127.0.0.1:3999<br/>http://0.0.0.0:3999"]
+    R_DOCKER["Router from n8n Docker<br/>http://host.docker.internal:3999"]
+    R_EP["GET /health<br/>POST /v1/chat/completions"]
+  end
+
+  subgraph inference["Inference layer"]
+    LLM["LiteLLM proxy<br/>http://127.0.0.1:4000<br/>launchd: ai.hermes.litellm"]
+    LLM_UI["LiteLLM UI<br/>http://127.0.0.1:4000/ui"]
+    LLM_EP["GET /health/liveliness<br/>GET /v1/models<br/>POST /v1/chat/completions"]
+    OLL["Ollama<br/>http://127.0.0.1:11434"]
+    OLL_EP["GET /api/tags<br/>POST /api/generate"]
+  end
+
+  subgraph models["Ollama models"]
+    M1["hermes3 — text"]
+    M2["llama3 — short text"]
+    M3["deepseek-ocr — images"]
+    M4["qwen3-vl — describe/diagram"]
+  end
+
+  subgraph data["Data stores"]
+    PG["Postgres<br/>127.0.0.1:5432<br/>litellm/litellm<br/>container: litellm-postgres-1"]
+    NEO["Neo4j Browser<br/>http://127.0.0.1:7474<br/>Bolt: bolt://127.0.0.1:7687<br/>neo4j/neo4j_local_dev"]
+    GR["GraphRAG UI — SKIP<br/>http://127.0.0.1:8501<br/>not deployed"]
+  end
+
+  TG --> GW
+  GW --> AGENT
+  AGENT -->|"base_url<br/>http://127.0.0.1:3999/v1"| R_HOST
+  AGENT -->|"auxiliary vision<br/>deepseek-ocr"| R_HOST
+  DASH --> GW
+  SW -.->|start/stop| GW
+  SW -.-> R_HOST
+  SW -.-> LLM
+  SW -.-> OLL
+  SW -.-> N8N_UI
+
+  N8N_WH1 --> R_DOCKER
+  N8N_WH2 --> R_DOCKER
+  N8N_UI --> N8N_WH1
+  N8N_UI --> N8N_WH2
+  R_DOCKER --> R_HOST
+  R_HOST --> R_EP
+  R_EP --> LLM
+  LLM --> LLM_EP
+  LLM --> LLM_UI
+  LLM --> PG
+  LLM_EP --> OLL
+  OLL --> OLL_EP
+  OLL --> M1
+  OLL --> M2
+  OLL --> M3
+  OLL --> M4
+  NEO -.-> GR

@@ -1,0 +1,15 @@
+flowchart TB
+  TG[Telegram @DhauladharBot]
+  N8[n8n :5678]
+  GW[Hermes Gateway]
+  AG[Agent<br/>main: hermes3<br/>aux vision: deepseek-ocr]
+  RT[Model Router :3999]
+  LL[LiteLLM :4000]
+  OL[Ollama :11434]
+
+  TG --> GW --> AG
+  N8 --> RT
+  AG --> RT
+  RT -->|text| LL
+  RT -->|image| LL
+  LL --> OL

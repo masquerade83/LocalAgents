@@ -2,6 +2,10 @@
 
 Skills define *how* tools work. This file is for *your* specifics — the stuff that's unique to your setup.
 
+## Project conventions
+
+- **New projects live under `clawd/`** — e.g. `clawd/lan-control-plane/`, never as a sibling of the workspace unless explicitly requested.
+
 ## What Goes Here
 
 Things like:
@@ -11,6 +15,12 @@ Things like:
 - Speaker/room names
 - Device nicknames
 - Anything environment-specific
+
+## Network
+
+- **Gateway:** `192.168.29.1` (JioFiber / `reliance.reliance`)
+- **Subnet:** `192.168.29.0/24`
+- **LAN Control Plane:** `clawd/lan-control-plane/` → `python server.py` → http://127.0.0.1:8765
 
 ## Cameras
 

@@ -1,0 +1,7 @@
+flowchart LR
+  APP[Application] --> HG[Helicone Gateway<br/>Rust / OpenAI-compatible]
+  HG -->|model-latency| FAST[Fastest model]
+  HG -->|cost-optimized| CHEAP[Cheapest model]
+  HG -->|weighted| POOL[Model pool]
+  HG -->|circuit break| HEALTH[Skip unhealthy backends]
+  FAST & CHEAP & POOL --> P1[OpenAI] & P2[Anthropic] & P3[Local Ollama]

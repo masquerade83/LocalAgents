@@ -1,0 +1,11 @@
+flowchart LR
+  TG["Telegram @DhauladharBot"]
+  GW["Hermes Gateway"]
+  AG["Hermes Agent"]
+  LL["LiteLLM :4000"]
+  OL["Ollama :11434"]
+  QV["qwen3-vl ALL traffic"]
+
+  TG --> GW --> AG
+  AG -->|"default qwen3-vl text+image"| LL
+  LL --> OL --> QV
