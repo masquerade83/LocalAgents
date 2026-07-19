@@ -1,0 +1,15 @@
+# Hermes model router — explicit routing policy
+# Used by rules.py (IMAGE_MODEL) and ~/.hermes/config.yaml (routing section)
+
+image_model: qwen3-vl   # ALWAYS for any request containing an image_url block
+
+text:
+  short_model: llama3   # ≤10 words in latest user message
+  default_model: hermes3
+  agent_model: qwen3-vl  # action keywords in latest user message only (not full history)
+
+routing_text_scope: latest_user_message   # never use full session for model pick
+
+pass_through:
+  - deepseek-ocr        # only when caller explicitly requests it (text/OCR tasks)
+  - qwen3-vl

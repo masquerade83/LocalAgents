@@ -24,12 +24,14 @@ Telegram → Hermes Gateway (model: auto) → :3999 router → :4000 LiteLLM →
 
 | Input | Model | Tools |
 |-------|--------|-------|
-| Session model `auto` + short text (≤10 words) | `llama3` | stripped |
-| Session model `auto` + general text | `hermes3` | stripped |
-| `auto` + tools + action keywords / long prompt | `qwen3-vl` | kept |
-| Image in messages | `deepseek-ocr` | stripped |
-| Image + describe/diagram keywords | `qwen3-vl` | kept |
-| Explicit `deepseek-ocr` / `qwen3-vl` | pass-through | kept for qwen3-vl |
+| `auto` + latest user msg ≤10 words | `llama3` | stripped |
+| `auto` + general text (latest user msg) | `hermes3` | stripped |
+| `auto` + action keywords in **latest user message** | `qwen3-vl` | kept |
+| **Any image** (`image_url` in messages) | **`qwen3-vl`** | kept |
+| Explicit `deepseek-ocr` (text/OCR only, no image routing) | pass-through | stripped |
+| Explicit `qwen3-vl` | pass-through | kept |
+
+**Image policy:** always `qwen3-vl` — see `router/routing.yaml` and `~/.hermes/config.yaml` → `routing.image_model`.
 
 Action keywords (agent escalation): `run`, `terminal`, `search`, `file`, `code`, `git`, etc.
 

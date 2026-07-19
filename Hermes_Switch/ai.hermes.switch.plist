@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>ai.hermes.switch</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/shailja/clawd/Hermes_Switch/run_switch.sh</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/shailja/clawd/Hermes_Switch</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/shailja/.local/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/shailja</string>
+        <key>HERMES_SWITCH_FOREGROUND</key>
+        <string>1</string>
+        <key>HERMES_SWITCH_PORT</key>
+        <string>9120</string>
+    </dict>
+    <key>LimitLoadToSessionType</key>
+    <array>
+        <string>Aqua</string>
+        <string>Background</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/shailja/.hermes/logs/switch-launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/shailja/.hermes/logs/switch-launchd.error.log</string>
+    <key>ThrottleInterval</key>
+    <integer>15</integer>
+</dict>
+</plist>

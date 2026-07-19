@@ -7,7 +7,7 @@
 ```
 Telegram → Hermes Gateway → Agent
                               ├─ Main chat (hermes3) ──────┐
-                              ├─ Auxiliary vision (deepseek-ocr) ──┤
+                              ├─ Auxiliary vision (qwen3-vl) ──┤
                               └─ Tools (no LLM)                    │
                                                                     ▼
 n8n webhooks ──────────────────────────────────────→ Model Router :3999
@@ -24,10 +24,10 @@ n8n webhooks ──────────────────────�
 | Aspect | Before | After |
 |--------|--------|-------|
 | Hermes default model | `qwen3-vl` (heavy VL for all text) | `hermes3` (fast text) |
-| Hermes `supports_vision` | `true` | `false` |
+| Hermes `supports_vision` | `true` | `true` (native images → router → qwen3-vl) |
 | Hermes `base_url` | `http://127.0.0.1:4000/v1` | `http://127.0.0.1:3999/v1` |
-| Image routing | Same model as text (`qwen3-vl`) | Router → `deepseek-ocr` or `qwen3-vl` by content |
-| Vision auxiliary | auto / main model | `deepseek-ocr` via router |
+| Image routing | Same model as text (`qwen3-vl`) | Router → **`qwen3-vl` always** for `image_url` |
+| Vision auxiliary | auto / main model | **`qwen3-vl`** via router (`routing.image_model`) |
 | Text chat latency | Slow (VL model always loaded) | Faster (`hermes3` / `llama3`) |
 | Central routing | None — caller picks model | Router inspects `messages[]` |
 | n8n LLM path | Direct LiteLLM :4000 | Can use router :3999 |
@@ -36,12 +36,14 @@ n8n webhooks ──────────────────────�
 
 | Signal | Model |
 |--------|--------|
-| Session `auto` + text ≤10 words | `llama3` (tools stripped) |
-| Session `auto` + general text | `hermes3` (tools stripped) |
-| Session `auto` + tools + action keywords / long prompt | `qwen3-vl` (tools kept) |
-| `image_url` in messages | `deepseek-ocr` |
-| Image + describe/diagram keywords | `qwen3-vl` |
-| Explicit `deepseek-ocr` / `qwen3-vl` | pass-through |
+| Session `auto` + **latest user** text ≤10 words | `llama3` (tools stripped) |
+| Session `auto` + general **latest user** text | `hermes3` (tools stripped) |
+| Session `auto` + **action keywords in latest user msg** | `qwen3-vl` (tools kept) |
+| **Any `image_url` in messages** | **`qwen3-vl` (always)** |
+| Explicit `deepseek-ocr` | pass-through (text OCR tasks only) |
+| Explicit `qwen3-vl` | pass-through |
+
+**Important:** Text routing uses the **latest user message only**, not full session history (fixes post-image qwen3-vl lock-in). See `docs/HERMES_TELEGRAM_PERFORMANCE.md`.
 
 Router code: `clawd/router/rules.py` (selection), `clawd/router/server.py` (proxy + tool stripping).
 
@@ -49,7 +51,9 @@ Router code: `clawd/router/rules.py` (selection), `clawd/router/server.py` (prox
 
 | File | Change |
 |------|--------|
-| `~/.hermes/config.yaml` | default `hermes3`, router URL, `auxiliary.vision` |
+| `~/.hermes/config.yaml` | default `auto`, router URL, `routing.image_model: qwen3-vl`, `auxiliary.vision: qwen3-vl` |
+| `clawd/router/routing.yaml` | explicit image/text routing policy |
+| `clawd/router/rules.py` | `IMAGE_MODEL = qwen3-vl` |
 | `clawd/router/server.py` | proxy on :3999 |
 | `clawd/Hermes_Switch/stackctl.sh` | router start/stop in stack |
 

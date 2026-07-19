@@ -4,7 +4,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# Models that are always forwarded unchanged (auxiliary vision, n8n explicit picks).
+# ── Explicit routing policy ─────────────────────────────────────────────
+# Also documented in ~/.hermes/config.yaml → routing.image_model
+IMAGE_MODEL = "qwen3-vl"  # ALWAYS used when messages[] contain an image_url block
+
+# Models that are always forwarded unchanged (explicit caller picks).
 PASS_THROUGH = frozenset({"deepseek-ocr", "qwen3-vl"})
 
 # Local Ollama chat models — no reliable tool-calling; Hermes Agent must not send tools.
@@ -93,6 +97,17 @@ def extract_text(messages: list[dict[str, Any]]) -> str:
     return " ".join(c for c in chunks if c).strip()
 
 
+def extract_last_user_text(messages: list[dict[str, Any]]) -> str:
+    """Latest user turn only — used for routing (not full session history)."""
+    for msg in reversed(messages or []):
+        if msg.get("role") != "user":
+            continue
+        text = _message_text(msg.get("content")).strip()
+        if text:
+            return text
+    return ""
+
+
 def wants_vision_description(text: str) -> bool:
     lower = text.lower()
     return any(k in lower for k in VISION_KEYWORDS)
@@ -111,12 +126,9 @@ def is_simple_text(text: str) -> bool:
 
 
 def wants_agent_model(text: str, has_tools: bool) -> bool:
-    """Use qwen3-vl (tool-capable) for complex or action-oriented agent turns."""
-    if not has_tools:
+    """Escalate to qwen3-vl only for explicit action-oriented user prompts."""
+    if not has_tools or not text:
         return False
-    words = re.findall(r"\w+", text)
-    if len(words) > 30:
-        return True
     lower = text.lower()
     return any(k in lower for k in AGENT_TOOL_KEYWORDS)
 
@@ -134,20 +146,18 @@ def pick_model(
     if lower_model in PASS_THROUGH:
         return lower_model, "explicit model pass-through"
 
-    text = extract_text(messages)
+    user_text = extract_last_user_text(messages)
     if has_image_url(messages):
-        if wants_vision_description(text):
-            return "qwen3-vl", "image + vision/describe keywords"
-        return "deepseek-ocr", "image present (default OCR)"
+        return IMAGE_MODEL, "image present (always qwen3-vl)"
 
     if lower_model == "llama3":
         return "llama3", "explicit llama3 text"
 
     if lower_model in AUTO_ALIASES or lower_model.startswith("hermes"):
-        if has_tools and wants_agent_model(text, has_tools):
-            return "qwen3-vl", "agent tools + action keywords or long prompt"
-        if is_simple_text(text):
-            return "llama3", "short text prompt"
+        if has_tools and wants_agent_model(user_text, has_tools):
+            return "qwen3-vl", "action keywords in latest user message"
+        if is_simple_text(user_text):
+            return "llama3", "short latest user message"
         return "hermes3", "default text chat"
 
     return model, "unrecognized model forwarded as-is"

@@ -46,11 +46,15 @@ svc_status() {
       fi
       ;;
     gateway)
-      if "$HERMES_BIN" gateway status >/dev/null 2>&1; then
+      gs_out="$("$HERMES_BIN" gateway status 2>&1)" || true
+      if launchctl print "$UID_LABEL/ai.hermes.gateway" 2>/dev/null | grep -q 'state = running'; then
         running="true"
         detail="Telegram gateway"
-      else
+      elif echo "$gs_out" | grep -qiE 'not loaded|is not loaded'; then
         detail="stopped"
+      else
+        running="true"
+        detail="Telegram gateway"
       fi
       ;;
     n8n)
@@ -139,6 +143,7 @@ start_router() {
 }
 
 stop_router() {
+  launchctl bootout "$UID_LABEL/ai.hermes.router" 2>/dev/null || true
   if [[ -f "$HOME/.hermes/router.pid" ]]; then
     pid="$(cat "$HOME/.hermes/router.pid" 2>/dev/null || true)"
     [[ -n "${pid:-}" ]] && kill "$pid" 2>/dev/null || true

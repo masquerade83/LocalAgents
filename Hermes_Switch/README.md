@@ -10,11 +10,31 @@ Telegram → Hermes Gateway → LiteLLM → Ollama
 ## Quick start
 
 ```bash
-chmod +x Hermes_Switch/stackctl.sh Hermes_Switch/open-panel.sh
+chmod +x Hermes_Switch/stackctl.sh Hermes_Switch/open-panel.sh Hermes_Switch/run_switch.sh
 ./Hermes_Switch/open-panel.sh
 ```
 
 Opens **http://127.0.0.1:9120** with toggle switches.
+
+## Auto-start (launchd)
+
+Install once so the panel survives reboots and restarts automatically:
+
+```bash
+cp Hermes_Switch/ai.hermes.switch.plist ~/Library/LaunchAgents/
+launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/ai.hermes.switch.plist
+launchctl kickstart -k "gui/$(id -u)/ai.hermes.switch"
+curl -s http://127.0.0.1:9120/api/status | python3 -m json.tool
+```
+
+Logs: `~/.hermes/logs/switch-launchd.log`
+
+Restart / stop panel only:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/ai.hermes.switch
+launchctl bootout gui/$(id -u)/ai.hermes.switch
+```
 
 ## CLI (no UI)
 
