@@ -5,6 +5,7 @@ set -euo pipefail
 UID_LABEL="gui/$(id -u)"
 CLAWD="$(cd "$(dirname "$0")/.." && pwd)"
 LITELLM_DIR="$CLAWD/LiteLLM"
+ROUTER_DIR="$CLAWD/router"
 HERMES_BIN="${HERMES_BIN:-$(command -v hermes || echo "$HOME/.local/bin/hermes")}"
 
 svc_status() {
@@ -32,6 +33,14 @@ svc_status() {
         detail=":4000"
       elif launchctl print "$UID_LABEL/ai.hermes.litellm" >/dev/null 2>&1; then
         detail="launchd loaded, not healthy yet"
+      else
+        detail="stopped"
+      fi
+      ;;
+    router)
+      if curl -sf --max-time 2 http://127.0.0.1:3999/health >/dev/null 2>&1; then
+        running="true"
+        detail=":3999"
       else
         detail="stopped"
       fi
@@ -65,7 +74,7 @@ svc_status() {
 cmd_status() {
   local first=1
   printf '['
-  for s in ollama postgres litellm gateway n8n; do
+  for s in ollama postgres litellm router gateway n8n; do
     [[ $first -eq 1 ]] || printf ','
     first=0
     svc_status "$s"
@@ -125,6 +134,20 @@ stop_litellm() {
   echo "litellm: stopped"
 }
 
+start_router() {
+  bash "$ROUTER_DIR/run_router.sh"
+}
+
+stop_router() {
+  if [[ -f "$HOME/.hermes/router.pid" ]]; then
+    pid="$(cat "$HOME/.hermes/router.pid" 2>/dev/null || true)"
+    [[ -n "${pid:-}" ]] && kill "$pid" 2>/dev/null || true
+    rm -f "$HOME/.hermes/router.pid"
+  fi
+  pkill -f "$ROUTER_DIR/server.py" 2>/dev/null || true
+  echo "router: stopped"
+}
+
 start_gateway() {
   "$HERMES_BIN" gateway start 2>/dev/null || launchctl kickstart -k "$UID_LABEL/ai.hermes.gateway"
   echo "gateway: start requested"
@@ -150,6 +173,7 @@ start_one() {
     ollama) start_ollama ;;
     postgres) start_postgres ;;
     litellm) start_litellm ;;
+    router) start_router ;;
     gateway) start_gateway ;;
     n8n) start_n8n ;;
     *) echo "unknown: $1" >&2; return 1 ;;
@@ -161,6 +185,7 @@ stop_one() {
     ollama) stop_ollama ;;
     postgres) stop_postgres ;;
     litellm) stop_litellm ;;
+    router) stop_router ;;
     gateway) stop_gateway ;;
     n8n) stop_n8n ;;
     *) echo "unknown: $1" >&2; return 1 ;;
@@ -173,6 +198,8 @@ start_all() {
   sleep 2
   start_litellm
   sleep 3
+  start_router
+  sleep 1
   start_n8n || true
   sleep 2
   start_gateway
@@ -181,6 +208,7 @@ start_all() {
 stop_all() {
   stop_gateway
   stop_n8n || true
+  stop_router
   stop_litellm
   # keep postgres + ollama running by default on stop-all (faster restarts)
   echo "stack: core stopped (postgres + ollama left running)"
@@ -190,7 +218,7 @@ usage() {
   cat <<EOF
 Usage: stackctl.sh <status|start|stop> [service|all]
 
-Services: ollama postgres litellm gateway n8n
+Services: ollama postgres litellm router gateway n8n
 
 Examples:
   stackctl.sh status

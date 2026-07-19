@@ -1,0 +1,22 @@
+flowchart LR
+  TG["Telegram @DhauladharBot"]
+  SW["Hermes Switch :9120"]
+  GW["Hermes Gateway"]
+  AG["Hermes Agent"]
+  RT["Model Router :3999"]
+  LL["LiteLLM :4000"]
+  OL["Ollama :11434"]
+  N8["n8n :5678"]
+  KU["Kush folder"]
+
+  SW --> GW
+  SW --> RT
+  SW --> LL
+  SW --> OL
+  SW --> N8
+  TG --> GW --> AG --> RT --> LL --> OL
+  AG --> KU
+  AG -->|MCP| N8
+  N8 -->|LLM webhooks| RT
+  N8 -->|health only| LL
+  N8 -->|health only| OL

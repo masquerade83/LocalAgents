@@ -1,0 +1,15 @@
+flowchart TB
+  subgraph before [Before — single model path]
+    B1[Telegram / n8n] --> B2[Hermes Agent] --> B3[LiteLLM :4000] --> B4[Ollama qwen3-vl]
+  end
+  subgraph after [After — intelligent routing]
+    A1[Telegram / n8n] --> A2[Hermes Agent<br/>main hermes3 + aux vision]
+    A2 --> A3[Model Router :3999]
+    A3 -->|text| A4[hermes3 / llama3]
+    A3 -->|image| A5[deepseek-ocr]
+    A3 -->|describe| A6[qwen3-vl]
+    A4 --> A7[LiteLLM :4000]
+    A5 --> A7
+    A6 --> A7
+    A7 --> A8[Ollama :11434]
+  end

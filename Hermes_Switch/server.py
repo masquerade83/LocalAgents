@@ -20,6 +20,7 @@ LABELS = {
     "ollama": {"title": "Ollama", "subtitle": "Local LLM backend", "port": 11434, "url": "http://127.0.0.1:11434"},
     "postgres": {"title": "LiteLLM Postgres", "subtitle": "Model config store", "port": 5432},
     "litellm": {"title": "LiteLLM", "subtitle": "OpenAI proxy", "port": 4000, "url": "http://127.0.0.1:4000/ui"},
+    "router": {"title": "Model Router", "subtitle": "Content-aware routing", "port": 3999, "url": "http://127.0.0.1:3999/health"},
     "gateway": {"title": "Hermes Gateway", "subtitle": "Telegram @DhauladharBot", "port": None},
     "n8n": {"title": "n8n", "subtitle": "Workflow automation", "port": 5678, "url": "http://127.0.0.1:5678"},
 }

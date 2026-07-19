@@ -19,6 +19,15 @@ model_list:
     litellm_params:
       model: ollama/llama3
       api_base: http://127.0.0.1:11434
+  - model_name: auto
+    litellm_params:
+      # Registry alias — real routing happens at Hermes router :3999
+      model: ollama/hermes3:8b
+      api_base: http://127.0.0.1:11434
+  - model_name: hermes-auto
+    litellm_params:
+      model: ollama/hermes3:8b
+      api_base: http://127.0.0.1:11434
 
 general_settings:
   master_key: admin

@@ -1,0 +1,25 @@
+flowchart TB
+  APPS[Enterprise applications]
+
+  subgraph tier1 [Tier 1 — Central ingress]
+    T1[Envoy AI Gateway]
+    AUTH[Authentication]
+    LIMIT[Token-aware rate limits]
+    ROUTE[Provider routing]
+  end
+
+  subgraph external [External providers]
+    OPENAI[OpenAI]
+    ANTHROPIC[Anthropic]
+    BEDROCK[AWS Bedrock]
+  end
+
+  subgraph tier2 [Tier 2 — Internal model cluster]
+    T2[Envoy AI Gateway]
+    KSERVE[KServe / vLLM / Ollama]
+  end
+
+  APPS --> T1
+  T1 --> AUTH --> LIMIT --> ROUTE
+  ROUTE --> OPENAI & ANTHROPIC & BEDROCK
+  ROUTE --> T2 --> KSERVE

@@ -1,0 +1,35 @@
+flowchart TB
+  subgraph entry [Entry points]
+    TG["Telegram @DhauladharBot"]
+    N8["n8n :5678 webhooks"]
+  end
+
+  subgraph hermes_opt1 [Hermes — Option 1 task split]
+    GW["Hermes Gateway"]
+    AG["Hermes Agent"]
+    MAIN["Main chat path<br/>default: hermes3"]
+    AUX["Auxiliary vision<br/>deepseek-ocr"]
+    TOOLS["Tools / skills / terminal<br/>no LLM"]
+  end
+
+  subgraph router_opt3 [Model Router — Option 3 :3999]
+    R{"Inspect messages[]"}
+    R -->|"text only"| T["hermes3 / llama3"]
+    R -->|"image_url present"| O["deepseek-ocr"]
+    R -->|"image + describe"| V["qwen3-vl"]
+  end
+
+  LL["LiteLLM :4000<br/>registry + auth + logs"]
+  OL["Ollama :11434"]
+
+  TG --> GW --> AG
+  AG --> MAIN
+  AG --> AUX
+  AG --> TOOLS
+  MAIN --> R
+  AUX --> R
+  N8 --> R
+  T --> LL
+  O --> LL
+  V --> LL
+  LL --> OL

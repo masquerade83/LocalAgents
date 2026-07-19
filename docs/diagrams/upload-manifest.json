@@ -1,0 +1,98 @@
+{
+  "case-envoy-two-tier": {
+    "filename": "case-envoy-two-tier.svg",
+    "bytes": 24554,
+    "path": "/Users/shailja/clawd/docs/diagrams/case-envoy-two-tier.svg",
+    "file_upload_id": "3a19eda1-d5b3-814c-b0fd-00b27d838e09",
+    "markdown_source": "file-upload://3a19eda1-d5b3-814c-b0fd-00b27d838e09",
+    "source_url": "https://files.catbox.moe/bh1pr4.svg"
+  },
+  "case-helicone": {
+    "filename": "case-helicone.svg",
+    "bytes": 26708,
+    "path": "/Users/shailja/clawd/docs/diagrams/case-helicone.svg",
+    "file_upload_id": "3a19eda1-d5b3-8102-81d6-00b262ca7458",
+    "markdown_source": "file-upload://3a19eda1-d5b3-8102-81d6-00b262ca7458",
+    "source_url": "https://files.catbox.moe/m7ava6.svg"
+  },
+  "case-hermes-local": {
+    "filename": "case-hermes-local.svg",
+    "bytes": 19129,
+    "path": "/Users/shailja/clawd/docs/diagrams/case-hermes-local.svg",
+    "file_upload_id": "3a19eda1-d5b3-8102-9056-00b2b99ea5af",
+    "markdown_source": "file-upload://3a19eda1-d5b3-8102-9056-00b2b99ea5af",
+    "source_url": "https://files.catbox.moe/o41kw8.svg"
+  },
+  "case-litellm-componentized": {
+    "filename": "case-litellm-componentized.svg",
+    "bytes": 16545,
+    "path": "/Users/shailja/clawd/docs/diagrams/case-litellm-componentized.svg",
+    "file_upload_id": "3a19eda1-d5b3-819e-8ca4-00b285b5b749",
+    "markdown_source": "file-upload://3a19eda1-d5b3-819e-8ca4-00b285b5b749",
+    "source_url": "https://files.catbox.moe/oa0p5k.svg"
+  },
+  "case-litellm-eks": {
+    "filename": "case-litellm-eks.svg",
+    "bytes": 27886,
+    "path": "/Users/shailja/clawd/docs/diagrams/case-litellm-eks.svg",
+    "file_upload_id": "3a19eda1-d5b3-818e-9b47-00b2578a63bd",
+    "markdown_source": "file-upload://3a19eda1-d5b3-818e-9b47-00b2578a63bd",
+    "source_url": "https://files.catbox.moe/y3klw8.svg"
+  },
+  "case-portkey": {
+    "filename": "case-portkey.svg",
+    "bytes": 20965,
+    "path": "/Users/shailja/clawd/docs/diagrams/case-portkey.svg",
+    "file_upload_id": "3a19eda1-d5b3-8193-ab94-00b2f54777c3",
+    "markdown_source": "file-upload://3a19eda1-d5b3-8193-ab94-00b2f54777c3",
+    "source_url": "https://files.catbox.moe/zvufcx.svg"
+  },
+  "hermes-routing-after": {
+    "filename": "hermes-routing-after.svg",
+    "bytes": 32783,
+    "path": "/Users/shailja/clawd/docs/diagrams/hermes-routing-after.svg",
+    "file_upload_id": "3a19eda1-d5b3-81fb-af1a-00b237d3e880",
+    "markdown_source": "file-upload://3a19eda1-d5b3-81fb-af1a-00b237d3e880",
+    "source_url": "https://files.catbox.moe/n5rz1m.svg"
+  },
+  "hermes-routing-before": {
+    "filename": "hermes-routing-before.svg",
+    "bytes": 16458,
+    "path": "/Users/shailja/clawd/docs/diagrams/hermes-routing-before.svg",
+    "file_upload_id": "3a19eda1-d5b3-81bb-9c3b-00b254e80f4f",
+    "markdown_source": "file-upload://3a19eda1-d5b3-81bb-9c3b-00b254e80f4f",
+    "source_url": "https://files.catbox.moe/aftm3e.svg"
+  },
+  "hermes-system-architecture": {
+    "filename": "hermes-system-architecture.svg",
+    "bytes": 30903,
+    "path": "/Users/shailja/clawd/docs/diagrams/hermes-system-architecture.svg",
+    "file_upload_id": "3a19eda1-d5b3-818f-8e21-00b263cb3ad2",
+    "markdown_source": "file-upload://3a19eda1-d5b3-818f-8e21-00b263cb3ad2",
+    "source_url": "https://files.catbox.moe/07kbcz.svg"
+  },
+  "stack-modules-before-after": {
+    "filename": "stack-modules-before-after.svg",
+    "bytes": 27139,
+    "path": "/Users/shailja/clawd/docs/diagrams/stack-modules-before-after.svg",
+    "file_upload_id": "3a19eda1-d5b3-81a9-9adc-00b25d4aac2a",
+    "markdown_source": "file-upload://3a19eda1-d5b3-81a9-9adc-00b25d4aac2a",
+    "source_url": "https://files.catbox.moe/eanwco.svg"
+  },
+  "stack-modules-e2e": {
+    "filename": "stack-modules-e2e.svg",
+    "bytes": 30009,
+    "path": "/Users/shailja/clawd/docs/diagrams/stack-modules-e2e.svg",
+    "file_upload_id": "3a19eda1-d5b3-81e0-9dc8-00b204d9dc3c",
+    "markdown_source": "file-upload://3a19eda1-d5b3-81e0-9dc8-00b204d9dc3c",
+    "source_url": "https://files.catbox.moe/m7w3s7.svg"
+  },
+  "hermes-architecture-with-uris": {
+    "filename": "hermes-architecture-with-uris.svg",
+    "bytes": 58235,
+    "path": "/Users/shailja/clawd/docs/diagrams/hermes-architecture-with-uris.svg",
+    "file_upload_id": "3a19eda1-d5b3-81c1-a81b-00b2c3b339db",
+    "markdown_source": "file-upload://3a19eda1-d5b3-81c1-a81b-00b2c3b339db",
+    "source_url": "https://files.catbox.moe/s7wctp.svg"
+  }
+}

@@ -1,0 +1,26 @@
+flowchart TB
+  user["User on Telegram"]
+  tg["Telegram Bot API"]
+  gw["Hermes Gateway<br/>~/.hermes"]
+  agent["Hermes Agent runtime<br/>tools + memory + skills"]
+  litellm["LiteLLM proxy<br/>127.0.0.1:4000"]
+  ollama["Ollama local API<br/>127.0.0.1:11434"]
+  qwen["Qwen3-VL 8.8B<br/>qwen3-vl"]
+  ocr["DeepSeek-OCR 3.3B<br/>deepseek-ocr"]
+  cwd["Working directory<br/>Hermes_Working_Directory"]
+  dash["Hermes Dashboard<br/>127.0.0.1:9119"]
+  n8n["n8n :5678<br/>workflows + MCP"]
+  sw["Hermes Switch<br/>127.0.0.1:9120"]
+
+  user --> tg --> gw --> agent
+  agent --> litellm --> ollama
+  ollama --> qwen
+  ollama --> ocr
+  agent --> cwd
+  dash --> gw
+  agent --> n8n
+  n8n -->|LLM tasks| litellm
+  sw --> gw
+  sw --> litellm
+  sw --> ollama
+  sw --> n8n

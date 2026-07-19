@@ -1,0 +1,9 @@
+flowchart TB
+  APP[Apps] --> PG[Portkey Gateway]
+  PG --> GUARD[Guardrails<br/>PII / jailbreak / injection]
+  PG --> CACHE[Semantic + exact cache]
+  PG --> ROUTE[Routing + fallbacks]
+  ROUTE --> M1[GPT-4o]
+  ROUTE --> M2[Claude]
+  ROUTE --> M3[Local Llama/Ollama]
+  PG --> OBS[Traces + cost attribution]

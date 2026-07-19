@@ -1,0 +1,17 @@
+flowchart TB
+  APP[Apps / Agents / n8n]
+  ALB[Internal ALB + TLS]
+  HPA[Kubernetes HPA]
+  LL1[LiteLLM Pod]
+  LL2[LiteLLM Pod]
+  RDS[(PostgreSQL RDS)]
+  REDIS[(ElastiCache Redis)]
+  AZ[Azure OpenAI]
+  OAI[OpenAI]
+  LOCAL[Self-hosted vLLM/Ollama]
+
+  APP --> ALB --> HPA
+  HPA --> LL1 & LL2
+  LL1 & LL2 --> RDS
+  LL1 & LL2 --> REDIS
+  LL1 & LL2 --> AZ & OAI & LOCAL

@@ -1,0 +1,12 @@
+flowchart LR
+  ING[Ingress]
+  GW[Gateway :4000<br/>Data plane<br/>/v1/chat/completions]
+  BE[Backend :4001<br/>Control plane<br/>keys, spend, teams]
+  UI[Admin UI :3000]
+  PG[(PostgreSQL)]
+
+  ING -->|/v1/*| GW
+  ING -->|/ui/*| UI
+  ING -->|/key/* /spend/*| BE
+  GW --> PG
+  BE --> PG
