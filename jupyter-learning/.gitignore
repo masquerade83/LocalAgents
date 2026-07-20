@@ -1,0 +1,5 @@
+# Local to jupyter-learning (root .gitignore already covers .venv/ and .env)
+.ipynb_checkpoints/
+.env
+*.pyc
+__pycache__/
