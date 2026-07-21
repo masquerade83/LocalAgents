@@ -13,6 +13,7 @@ from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parent
 STACKCTL = ROOT / "stackctl.sh"
+OBSERVE = ROOT.parent / "observability" / "stack_observe.py"
 PORT = int(os.environ.get("HERMES_SWITCH_PORT", os.environ.get("STACK_CONTROL_PORT", "9120")))
 HOST = "127.0.0.1"
 
@@ -23,6 +24,10 @@ LABELS = {
     "router": {"title": "Model Router", "subtitle": "Content-aware routing", "port": 3999, "url": "http://127.0.0.1:3999/health"},
     "gateway": {"title": "Hermes Gateway", "subtitle": "Telegram @DhauladharBot", "port": None},
     "n8n": {"title": "n8n", "subtitle": "Workflow automation", "port": 5678, "url": "http://127.0.0.1:5678"},
+    "prometheus": {"title": "Prometheus", "subtitle": "Metrics TSDB", "port": 9090, "url": "http://127.0.0.1:9090"},
+    "grafana": {"title": "Grafana", "subtitle": "Stack dashboards", "port": 3000, "url": "http://127.0.0.1:3000"},
+    "ollama_exporter": {"title": "Ollama VRAM exporter", "subtitle": "Prometheus :9101", "port": 9101, "url": "http://127.0.0.1:9101/metrics"},
+    "ollama_inference_proxy": {"title": "Ollama inference proxy", "subtitle": "Prefill/decode metrics :11435→11434", "port": 11435, "url": "http://127.0.0.1:9102/metrics"},
 }
 
 
@@ -44,6 +49,20 @@ def get_status() -> list[dict]:
         meta = LABELS.get(row["name"], {})
         row.update(meta)
     return rows
+
+
+def get_observe() -> dict:
+    if not OBSERVE.is_file():
+        raise RuntimeError(f"missing {OBSERVE}")
+    proc = subprocess.run(
+        [sys.executable, str(OBSERVE)],
+        capture_output=True,
+        text=True,
+        timeout=45,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(proc.stderr or "observe failed")
+    return json.loads(proc.stdout)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -70,6 +89,11 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
             return self._file(ROOT / "index.html", "text/html; charset=utf-8")
+        if path == "/api/observe":
+            try:
+                return self._json(200, {"ok": True, **get_observe()})
+            except Exception as e:
+                return self._json(500, {"ok": False, "error": str(e)})
         if path == "/api/status":
             try:
                 return self._json(200, {"ok": True, "services": get_status()})

@@ -1,35 +1,48 @@
+# Hermes LiteLLM → Ollama via inference proxy (:11435) for prefill/decode metrics.
+# Direct Ollama for jupyter-learning / CLI stays on :11434.
+OLLAMA_API_BASE: &ollama_api_base http://127.0.0.1:11435
+
 model_list:
   - model_name: qwen3-vl
     litellm_params:
       # ollama_chat uses /api/chat and preserves vision image_url blocks.
       # ollama/ (generate) drops or mishandles VL images → empty content.
       model: ollama_chat/qwen3-vl
-      api_base: http://127.0.0.1:11434
+      api_base: *ollama_api_base
       model_info:
         supports_vision: true
   - model_name: deepseek-ocr
     litellm_params:
       model: ollama/deepseek-ocr
-      api_base: http://127.0.0.1:11434
+      api_base: *ollama_api_base
   - model_name: hermes3
     litellm_params:
       model: ollama/hermes3:8b
-      api_base: http://127.0.0.1:11434
+      api_base: *ollama_api_base
   - model_name: llama3
     litellm_params:
       model: ollama/llama3
-      api_base: http://127.0.0.1:11434
+      api_base: *ollama_api_base
+  - model_name: qwen2.5-0.5b
+    litellm_params:
+      # Jupyter-learning uses direct Ollama :11434 — this alias is for registry/pass-through only.
+      model: ollama/qwen2.5:0.5b
+      api_base: *ollama_api_base
   - model_name: auto
     litellm_params:
       # Registry alias — real routing happens at Hermes router :3999
       model: ollama/hermes3:8b
-      api_base: http://127.0.0.1:11434
+      api_base: *ollama_api_base
   - model_name: hermes-auto
     litellm_params:
       model: ollama/hermes3:8b
-      api_base: http://127.0.0.1:11434
+      api_base: *ollama_api_base
 
 general_settings:
   master_key: admin
   database_url: postgresql://litellm:litellm@127.0.0.1:5432/litellm
   store_model_in_db: true
+
+litellm_settings:
+  callbacks: ["prometheus"]
+  require_auth_for_metrics_endpoint: false
