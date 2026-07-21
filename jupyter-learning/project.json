@@ -1,0 +1,13 @@
+{
+  "project": "jupyter-learning",
+  "scope": "This folder only. Does not change other clawd projects, default Jupyter kernel, or system Python.",
+  "ollama": {
+    "base_url": "http://127.0.0.1:11434",
+    "default_model": "qwen2.5:0.5b"
+  },
+  "jupyter": {
+    "kernel_name": "lamini-py311",
+    "kernel_display_name": "Python 3.11 (jupyter-learning)",
+    "venv": ".venv"
+  }
+}

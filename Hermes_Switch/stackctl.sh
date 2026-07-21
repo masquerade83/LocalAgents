@@ -6,6 +6,7 @@ UID_LABEL="gui/$(id -u)"
 CLAWD="$(cd "$(dirname "$0")/.." && pwd)"
 LITELLM_DIR="$CLAWD/LiteLLM"
 ROUTER_DIR="$CLAWD/router"
+OBS_DIR="$CLAWD/observability"
 HERMES_BIN="${HERMES_BIN:-$(command -v hermes || echo "$HOME/.local/bin/hermes")}"
 
 svc_status() {
@@ -67,6 +68,42 @@ svc_status() {
         detail="not found"
       fi
       ;;
+    prometheus)
+      if curl -sf --max-time 2 http://127.0.0.1:9090/-/healthy >/dev/null 2>&1; then
+        running="true"
+        detail=":9090"
+      elif docker ps --format '{{.Names}}' 2>/dev/null | grep -qx 'hermes-prometheus'; then
+        detail="container stopped"
+      else
+        detail="not found"
+      fi
+      ;;
+    grafana)
+      if curl -sf --max-time 2 http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
+        running="true"
+        detail=":3000"
+      elif docker ps --format '{{.Names}}' 2>/dev/null | grep -qx 'hermes-grafana'; then
+        detail="container stopped"
+      else
+        detail="not found"
+      fi
+      ;;
+    ollama_exporter)
+      if curl -sf --max-time 2 http://127.0.0.1:9101/metrics >/dev/null 2>&1; then
+        running="true"
+        detail=":9101"
+      else
+        detail="stopped"
+      fi
+      ;;
+    ollama_inference_proxy)
+      if curl -sf --max-time 2 http://127.0.0.1:9102/metrics >/dev/null 2>&1; then
+        running="true"
+        detail="proxy :11435 metrics :9102"
+      else
+        detail="stopped"
+      fi
+      ;;
     *)
       echo "unknown service: $name" >&2
       return 1
@@ -78,7 +115,7 @@ svc_status() {
 cmd_status() {
   local first=1
   printf '['
-  for s in ollama postgres litellm router gateway n8n; do
+  for s in ollama ollama_inference_proxy postgres litellm router gateway n8n prometheus grafana ollama_exporter; do
     [[ $first -eq 1 ]] || printf ','
     first=0
     svc_status "$s"
@@ -173,6 +210,45 @@ stop_n8n() {
   echo "n8n: stopped"
 }
 
+start_observability() {
+  docker compose -f "$OBS_DIR/docker-compose.yml" up -d
+  bash "$OBS_DIR/run_ollama_exporter.sh"
+  bash "$OBS_DIR/run_ollama_inference_proxy.sh" || true
+  echo "observability: prometheus + grafana + ollama exporters started"
+}
+
+stop_observability() {
+  stop_ollama_exporter
+  stop_ollama_inference_proxy
+  docker compose -f "$OBS_DIR/docker-compose.yml" stop 2>/dev/null || true
+  echo "observability: stopped"
+}
+
+start_prometheus() { docker compose -f "$OBS_DIR/docker-compose.yml" up -d prometheus; echo "prometheus: started"; }
+stop_prometheus() { docker stop hermes-prometheus 2>/dev/null || true; echo "prometheus: stopped"; }
+start_grafana() { docker compose -f "$OBS_DIR/docker-compose.yml" up -d grafana; echo "grafana: started"; }
+stop_grafana() { docker stop hermes-grafana 2>/dev/null || true; echo "grafana: stopped"; }
+start_ollama_exporter() { bash "$OBS_DIR/run_ollama_exporter.sh"; }
+stop_ollama_exporter() {
+  if [[ -f "$HOME/.hermes/ollama-exporter.pid" ]]; then
+    pid="$(cat "$HOME/.hermes/ollama-exporter.pid" 2>/dev/null || true)"
+    [[ -n "${pid:-}" ]] && kill "$pid" 2>/dev/null || true
+    rm -f "$HOME/.hermes/ollama-exporter.pid"
+  fi
+  echo "ollama-exporter: stopped"
+}
+
+start_ollama_inference_proxy() { bash "$OBS_DIR/run_ollama_inference_proxy.sh"; }
+stop_ollama_inference_proxy() {
+  if [[ -f "$HOME/.hermes/ollama-inference-proxy.pid" ]]; then
+    pid="$(cat "$HOME/.hermes/ollama-inference-proxy.pid" 2>/dev/null || true)"
+    [[ -n "${pid:-}" ]] && kill "$pid" 2>/dev/null || true
+    rm -f "$HOME/.hermes/ollama-inference-proxy.pid"
+  fi
+  pkill -f "$OBS_DIR/ollama_inference_proxy.py" 2>/dev/null || true
+  echo "ollama-inference-proxy: stopped"
+}
+
 start_one() {
   case "$1" in
     ollama) start_ollama ;;
@@ -181,6 +257,11 @@ start_one() {
     router) start_router ;;
     gateway) start_gateway ;;
     n8n) start_n8n ;;
+    observability) start_observability ;;
+    prometheus) start_prometheus ;;
+    grafana) start_grafana ;;
+    ollama_exporter) start_ollama_exporter ;;
+    ollama_inference_proxy) start_ollama_inference_proxy ;;
     *) echo "unknown: $1" >&2; return 1 ;;
   esac
 }
@@ -193,12 +274,18 @@ stop_one() {
     router) stop_router ;;
     gateway) stop_gateway ;;
     n8n) stop_n8n ;;
+    observability) stop_observability ;;
+    prometheus) stop_prometheus ;;
+    grafana) stop_grafana ;;
+    ollama_exporter) stop_ollama_exporter ;;
+    ollama_inference_proxy) stop_ollama_inference_proxy ;;
     *) echo "unknown: $1" >&2; return 1 ;;
   esac
 }
 
 start_all() {
   start_ollama || true
+  start_ollama_inference_proxy || true
   start_postgres
   sleep 2
   start_litellm
@@ -207,6 +294,8 @@ start_all() {
   sleep 1
   start_n8n || true
   sleep 2
+  start_observability || true
+  sleep 1
   start_gateway
 }
 
@@ -223,7 +312,7 @@ usage() {
   cat <<EOF
 Usage: stackctl.sh <status|start|stop> [service|all]
 
-Services: ollama postgres litellm router gateway n8n
+Services: ollama ollama_inference_proxy postgres litellm router gateway n8n observability prometheus grafana ollama_exporter
 
 Examples:
   stackctl.sh status

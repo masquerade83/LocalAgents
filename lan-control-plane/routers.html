@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Router Classification & Default-Login Audit</title>
+<style>
+  :root { --bg:#0b1020; --panel:#141c31; --border:#26314f; --text:#e8edf7; --muted:#8c98b7;
+          --good:#47d19a; --crit:#ff6b6b; --accent:#4cc2ff; --jio:#5b8def; --airtel:#ff5a4d; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:linear-gradient(180deg,#0b1020,#0d1428); color:var(--text);
+         font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:960px; margin:0 auto; padding:28px 22px 60px; }
+  h1 { font-size:22px; margin:0 0 4px; letter-spacing:-0.02em; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
+  .note { background:rgba(255,180,84,.08); border:1px solid rgba(255,180,84,.3); color:#ffe0b0;
+          padding:11px 14px; border-radius:10px; font-size:12.5px; margin-bottom:22px; }
+  .isp-tabs { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .isp-chip { padding:8px 14px; border-radius:20px; font-size:13px; font-weight:700; border:1px solid var(--border); }
+  .isp-Jio { background:rgba(91,141,239,.15); color:var(--jio); border-color:rgba(91,141,239,.4); }
+  .isp-Airtel { background:rgba(255,90,77,.15); color:var(--airtel); border-color:rgba(255,90,77,.4); }
+  .isp-other { background:rgba(140,152,183,.12); color:var(--muted); }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:16px; }
+  .card .head { display:flex; align-items:center; gap:12px; }
+  .logo { width:42px; height:42px; border-radius:10px; display:grid; place-items:center; font-weight:800; font-size:14px; }
+  .logo.Jio { background:linear-gradient(135deg,#5b8def,#3f6fd6); color:#fff; }
+  .logo.Airtel { background:linear-gradient(135deg,#ff5a4d,#e0342a); color:#fff; }
+  .logo.other { background:#2b3757; color:var(--muted); }
+  .card h3 { margin:0; font-size:16px; }
+  .card .ip { color:var(--muted); font-size:12.5px; }
+  .badge { margin-left:auto; font-size:11px; font-weight:800; padding:4px 11px; border-radius:20px; }
+  .b-ok { background:rgba(71,209,154,.15); color:var(--good); }
+  .b-critical { background:rgba(255,107,107,.18); color:var(--crit); }
+  .b-unknown { background:rgba(140,152,183,.15); color:var(--muted); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:16px 0; }
+  .kv { background:#0f1730; border:1px solid var(--border); border-radius:9px; padding:9px 11px; }
+  .kv .k { color:var(--muted); font-size:11px; } .kv .v { font-size:13px; font-weight:600; margin-top:2px; word-break:break-word; }
+  .audit { border-top:1px solid var(--border); margin-top:14px; padding-top:14px; }
+  .audit h4 { margin:0 0 10px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th,td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--border); }
+  th { color:var(--muted); font-weight:600; }
+  .pill { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; }
+  .p-no { background:rgba(71,209,154,.15); color:var(--good); }
+  .p-yes { background:rgba(255,107,107,.18); color:var(--crit); }
+  .verdict { margin-top:12px; padding:12px 14px; border-radius:10px; font-size:13px; font-weight:600; }
+  .verdict.ok { background:rgba(71,209,154,.1); color:var(--good); border:1px solid rgba(71,209,154,.3); }
+  .verdict.critical { background:rgba(255,107,107,.1); color:var(--crit); border:1px solid rgba(255,107,107,.35); }
+  footer { margin-top:26px; color:var(--muted); font-size:11.5px; text-align:center; }
+  code { background:#0f1730; padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<nav class="lcp-nav">
+  <style>
+    .lcp-nav { position:sticky; top:0; z-index:1000; display:flex; align-items:center; gap:4px;
+               height:45px; padding:0 18px; background:rgba(11,16,32,.92);
+               -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+               border-bottom:1px solid #26314f;
+               font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+    .lcp-nav .lcp-brand { color:#4cc2ff; font-size:12px; font-weight:800; letter-spacing:.08em;
+                          text-transform:uppercase; margin-right:14px; white-space:nowrap; }
+    .lcp-nav a { color:#8c98b7; text-decoration:none; font-size:13px; font-weight:600;
+                 padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap; }
+    .lcp-nav a:hover { color:#e8edf7; background:#141c31; border-color:#26314f; }
+    .lcp-nav a.active { color:#4cc2ff; background:rgba(76,194,255,.1); border-color:rgba(76,194,255,.35); }
+  </style>
+  <span class="lcp-brand">LAN CP</span>
+  <a href="/">Devices</a>
+  <a href="/graph.html">Knowledge Graph</a>
+  <a href="/wifi.html">Wi-Fi Scan</a>
+  <a href="/routers.html">Router Audit</a>
+  <script>
+    (function(){
+      var p = location.pathname;
+      document.querySelectorAll('.lcp-nav a').forEach(function(a){
+        var h = a.getAttribute('href');
+        var isHome = (p === '/' || p === '/index.html');
+        if ((h === '/' && isHome) || (h !== '/' && h === p)) a.classList.add('active');
+      });
+    })();
+  </script>
+</nav>
+<div class="wrap">
+  <h1>Router Classification &amp; Default-Login Audit</h1>
+  <div class="sub" id="sub">loading…</div>
+  <div class="note" id="note"></div>
+  <div class="isp-tabs" id="isp"></div>
+  <div id="cards"></div>
+  <footer>Login testing is limited to the gateway you administer · lan-control-plane</footer>
+</div>
+<script>
+function ispClass(isp){ return isp==="Jio"?"Jio":isp==="Airtel"?"Airtel":"other"; }
+function initials(isp){ return isp==="Jio"?"jio":isp==="Airtel"?"airtel":"?"; }
+
+fetch("./data/routers.json").then(r=>r.json()).then(d=>{
+  document.getElementById("sub").textContent =
+    `${d.subnet} · ${d.total_devices} devices total · scanned ${d.scanned_at}`;
+  document.getElementById("note").textContent = d.note;
+
+  const isp = document.getElementById("isp");
+  isp.innerHTML = Object.entries(d.isp_breakdown).map(([k,v])=>{
+    const cls = k==="Jio"?"isp-Jio":k==="Airtel"?"isp-Airtel":"isp-other";
+    const name = k==="—"?"Clients / unknown":k;
+    return `<span class="isp-chip ${cls}">${name}: ${v}</span>`;
+  }).join("");
+
+  const cards = document.getElementById("cards");
+  if(!d.routers.length){ cards.innerHTML = "<div class='card'>No ISP routers identified on this LAN.</div>"; return; }
+  cards.innerHTML = d.routers.map(r=>{
+    const a = r.audit || {};
+    const sev = a.severity || "unknown";
+    const badge = sev==="ok"?"b-ok":sev==="critical"?"b-critical":"b-unknown";
+    const badgeTxt = sev==="ok"?"DEFAULTS REJECTED":sev==="critical"?"USING DEFAULTS":"NOT TESTED";
+    const rows = (a.attempts||[]).map(at=>`
+      <tr><td><code>${at.user}</code></td><td>${at.status??"—"}</td>
+      <td><span class="pill ${at.accepted?'p-yes':'p-no'}">${at.accepted?'ACCEPTED':'rejected'}</span></td></tr>`).join("");
+    const verdict = a.result ? `<div class="verdict ${sev==='critical'?'critical':'ok'}">${
+      sev==='critical' ? '⚠ '+a.result+` (user: ${a.accepted_user})` : '✓ '+a.result}</div>` : "";
+    const ic = ispClass(r.isp);
+    return `<div class="card">
+      <div class="head">
+        <div class="logo ${ic}">${(r.isp||'?').slice(0,4)}</div>
+        <div>
+          <h3>${r.nickname||r.vendor||r.hostname||r.ip}</h3>
+          <div class="ip">${r.ip} · ${r.mac} · ${r.hostname||''}</div>
+        </div>
+        <span class="badge ${badge}">${badgeTxt}</span>
+      </div>
+      <div class="grid">
+        <div class="kv"><div class="k">ISP</div><div class="v">${r.isp||'unknown'}</div></div>
+        <div class="kv"><div class="k">Vendor (OUI)</div><div class="v">${r.vendor||'unknown'}</div></div>
+        <div class="kv"><div class="k">Open ports</div><div class="v">${(r.open_ports||[]).join(', ')||'—'}</div></div>
+        <div class="kv"><div class="k">Login type</div><div class="v">${a.login_type||'—'}</div></div>
+      </div>
+      ${(a.attempts&&a.attempts.length)?`<div class="audit">
+        <h4>Default-credential test (${a.form_action||''})</h4>
+        <table><tr><th>Username tried</th><th>HTTP</th><th>Result</th></tr>${rows}</table>
+        ${verdict}
+      </div>`:(verdict||`<div class="audit"><h4>Default-credential test</h4><div class="verdict ok">${a.result||'not applicable'}</div></div>`)}
+    </div>`;
+  }).join("");
+}).catch(()=>{ document.getElementById("sub").textContent="failed to load ./data/routers.json"; });
+</script>
+</body>
+</html>

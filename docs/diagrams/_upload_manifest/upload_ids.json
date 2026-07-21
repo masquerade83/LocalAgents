@@ -1,0 +1,13 @@
+{
+  "hermes-routing-before": "file-upload://3a19eda1-d5b3-814e-b3a0-00b2015d0e44",
+  "hermes-routing-after": "file-upload://3a19eda1-d5b3-813b-bbff-00b2f53bdb20",
+  "hermes-system-architecture": "file-upload://3a19eda1-d5b3-815a-b47e-00b2c85cc9e2",
+  "stack-modules-e2e": "file-upload://3a19eda1-d5b3-81b9-a8b8-00b2b3c83505",
+  "stack-modules-before-after": "file-upload://3a19eda1-d5b3-8184-9ff4-00b2f52e3f0f",
+  "case-litellm-eks": "file-upload://3a19eda1-d5b3-81cb-91fa-00b2b11096de",
+  "case-litellm-componentized": "file-upload://3a19eda1-d5b3-81f3-8fa9-00b22362aeb5",
+  "case-envoy-two-tier": "file-upload://3a19eda1-d5b3-8183-8679-00b2de50201c",
+  "case-helicone": "file-upload://3a19eda1-d5b3-810c-b47f-00b22a69b535",
+  "case-portkey": "file-upload://3a19eda1-d5b3-817d-89cc-00b23e36de75",
+  "case-hermes-local": "file-upload://3a19eda1-d5b3-813a-83ef-00b2f91fbfde"
+}

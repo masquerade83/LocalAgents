@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wi-Fi Scan · Signal & Security Posture</title>
+<style>
+  :root { --bg:#0b1020; --panel:#141c31; --panel2:#1a2340; --border:#26314f; --text:#e8edf7;
+          --muted:#8c98b7; --good:#47d19a; --mod:#ffb454; --weak:#ff8a5c; --crit:#ff6b6b; --accent:#4cc2ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:linear-gradient(180deg,#0b1020,#0d1428); color:var(--text);
+         font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:28px 22px 60px; }
+  h1 { font-size:22px; margin:0 0 4px; letter-spacing:-0.02em; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:22px; }
+  .note { background:rgba(76,194,255,.08); border:1px solid rgba(76,194,255,.25); color:#bfe3ff;
+          padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:22px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px 18px;
+          position:relative; overflow:hidden; }
+  .card.connected { border-color:rgba(76,194,255,.5); box-shadow:0 0 0 1px rgba(76,194,255,.25) inset; }
+  .card .top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .card .name { font-weight:700; font-size:15px; }
+  .card .name small { color:var(--muted); font-weight:500; }
+  .badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  .b-good { background:rgba(71,209,154,.15); color:var(--good); }
+  .b-moderate { background:rgba(255,180,84,.15); color:var(--mod); }
+  .b-weak { background:rgba(255,138,92,.15); color:var(--weak); }
+  .b-critical { background:rgba(255,107,107,.15); color:var(--crit); }
+  .b-strong { background:rgba(71,209,154,.2); color:var(--good); }
+  .b-unknown { background:rgba(140,152,183,.15); color:var(--muted); }
+  .meta { display:flex; flex-wrap:wrap; gap:6px 14px; margin:12px 0 10px; font-size:12px; color:var(--muted); }
+  .meta b { color:var(--text); font-weight:600; }
+  .bars { display:flex; align-items:flex-end; gap:3px; height:22px; }
+  .bars i { width:6px; background:#2b3757; border-radius:2px; }
+  .bars i.on.excellent { background:var(--good); } .bars i.on.good { background:var(--good); }
+  .bars i.on.fair { background:var(--mod); } .bars i.on.weak { background:var(--weak); }
+  .score-row { display:flex; align-items:center; gap:10px; margin-top:6px; }
+  .track { flex:1; height:8px; background:#232e4c; border-radius:6px; overflow:hidden; }
+  .fill { height:100%; border-radius:6px; }
+  .postnote { font-size:11.5px; color:var(--muted); margin-top:8px; }
+  .tag-conn { color:var(--accent); font-size:11px; font-weight:700; }
+  .isp { font-size:10.5px; font-weight:800; padding:2px 7px; border-radius:20px; margin-left:6px; vertical-align:middle; }
+  .isp-Jio { background:rgba(91,141,239,.18); color:#7ba6f5; }
+  .isp-Airtel { background:rgba(255,90,77,.18); color:#ff7a6e; }
+  .isp-other { background:rgba(140,152,183,.15); color:var(--muted); }
+  .redacted-hint { background:rgba(255,180,84,.08); border:1px solid rgba(255,180,84,.3); color:#ffe0b0;
+                   padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:16px; display:none; }
+  .redacted-hint.show { display:block; }
+  section.scorer { margin-top:36px; background:var(--panel); border:1px solid var(--border);
+                   border-radius:16px; padding:22px; }
+  section.scorer h2 { margin:0 0 4px; font-size:17px; }
+  .scorer .hint { color:var(--muted); font-size:12.5px; margin-bottom:16px; }
+  .pwrow { display:flex; gap:10px; align-items:center; }
+  input[type=text] { flex:1; background:#0f1730; border:1px solid var(--border); color:var(--text);
+                     padding:12px 14px; border-radius:10px; font-size:14px; font-family:ui-monospace,monospace; }
+  input[type=text]:focus { outline:none; border-color:var(--accent); }
+  .btn { background:#1b2540; color:var(--text); border:1px solid var(--border); border-radius:10px;
+         padding:12px 16px; font-size:13px; cursor:pointer; }
+  .btn:hover { border-color:var(--accent); }
+  .result { margin-top:18px; display:none; }
+  .result.show { display:block; }
+  .big { display:flex; align-items:baseline; gap:12px; }
+  .rating { font-size:24px; font-weight:800; }
+  .entropy { color:var(--muted); font-size:13px; }
+  .facts { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; }
+  .chip { background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:6px 10px;
+          font-size:12px; color:var(--muted); } .chip b { color:var(--text); }
+  .warns { list-style:none; padding:0; margin:8px 0 0; }
+  .warns li { color:var(--weak); font-size:12.5px; padding:3px 0; }
+  .warns li:before { content:"⚠ "; }
+  .crack { font-size:12px; color:var(--muted); margin-top:10px; }
+  footer { margin-top:30px; color:var(--muted); font-size:11.5px; text-align:center; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<nav class="lcp-nav">
+  <style>
+    .lcp-nav { position:sticky; top:0; z-index:1000; display:flex; align-items:center; gap:4px;
+               height:45px; padding:0 18px; background:rgba(11,16,32,.92);
+               -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+               border-bottom:1px solid #26314f;
+               font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+    .lcp-nav .lcp-brand { color:#4cc2ff; font-size:12px; font-weight:800; letter-spacing:.08em;
+                          text-transform:uppercase; margin-right:14px; white-space:nowrap; }
+    .lcp-nav a { color:#8c98b7; text-decoration:none; font-size:13px; font-weight:600;
+                 padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap; }
+    .lcp-nav a:hover { color:#e8edf7; background:#141c31; border-color:#26314f; }
+    .lcp-nav a.active { color:#4cc2ff; background:rgba(76,194,255,.1); border-color:rgba(76,194,255,.35); }
+  </style>
+  <span class="lcp-brand">LAN CP</span>
+  <a href="/">Devices</a>
+  <a href="/graph.html">Knowledge Graph</a>
+  <a href="/wifi.html">Wi-Fi Scan</a>
+  <a href="/routers.html">Router Audit</a>
+  <script>
+    (function(){
+      var p = location.pathname;
+      document.querySelectorAll('.lcp-nav a').forEach(function(a){
+        var h = a.getAttribute('href');
+        var isHome = (p === '/' || p === '/index.html');
+        if ((h === '/' && isHome) || (h !== '/' && h === p)) a.classList.add('active');
+      });
+    })();
+  </script>
+</nav>
+<div class="wrap">
+  <h1>Wi-Fi Scan — Signal &amp; Security Posture</h1>
+  <div class="sub" id="sub">loading…</div>
+  <div class="note">
+    Names come from CoreWLAN once Location permission is granted (otherwise networks show as <b>AP-n</b>).
+    ISP badges are inferred from the SSID name. <b>Posture score rates the encryption scheme only</b> —
+    retrieving or cracking another network's password is neither done nor possible here. Use the passphrase
+    scorer below for <b>your own</b> Wi-Fi password.
+  </div>
+
+  <div class="redacted-hint" id="redacted">
+    SSIDs are currently <b>redacted by macOS</b>, so ISP labels can't populate. Enable
+    <b>System Settings → Privacy &amp; Security → Location Services</b> for your terminal, then re-run the scan.
+  </div>
+  <div class="cards" id="cards"></div>
+
+  <section class="scorer">
+    <h2>🔐 Passphrase strength scorer</h2>
+    <div class="hint">Runs 100% in your browser — nothing is sent anywhere. Type your own Wi-Fi/router
+      passphrase to see how strong it is.</div>
+    <div class="pwrow">
+      <input id="pw" type="text" placeholder="Type a passphrase to score…" autocomplete="off" spellcheck="false" />
+      <button class="btn" id="clear">Clear</button>
+    </div>
+    <div class="result" id="result">
+      <div class="big"><span class="rating" id="rating"></span><span class="entropy" id="entropy"></span></div>
+      <div class="track" style="margin-top:10px"><div class="fill" id="fill"></div></div>
+      <div class="facts" id="facts"></div>
+      <ul class="warns" id="warns"></ul>
+      <div class="crack" id="crack"></div>
+    </div>
+  </section>
+
+  <footer>Local read-only RF observation via <code>CoreWLAN</code> (Swift helper) · lan-control-plane</footer>
+</div>
+
+<script>
+const COMMON = new Set(["password","123456","12345678","qwerty","admin","welcome","letmein",
+  "iloveyou","1234567890","abc123","111111","000000","password1","admin123","changeme","jiofiber","reliance"]);
+const RUNS = ["qwertyuiop","asdfghjkl","zxcvbnm","1234567890"];
+
+function levelClass(l){ return "b-"+(l||"unknown"); }
+function fillColor(score){ return score>=80?"#47d19a":score>=65?"#8fd14f":score>=45?"#ffb454":score>=25?"#ff8a5c":"#ff6b6b"; }
+function bars(quality){
+  const map={excellent:4,good:3,fair:2,weak:1,unknown:0}; const n=map[quality]??0;
+  let h=[8,13,18,22]; let out="";
+  for(let i=0;i<4;i++) out+=`<i class="${i<n?'on '+quality:''}" style="height:${h[i]}px"></i>`;
+  return `<div class="bars" title="${quality}">${out}</div>`;
+}
+
+function ispClass(isp){ return isp==="Jio"?"isp-Jio":isp==="Airtel"?"isp-Airtel":"isp-other"; }
+fetch("./data/wifi.json").then(r=>r.json()).then(d=>{
+  const ispCounts={}; d.networks.forEach(n=>{ if(n.isp) ispCounts[n.isp]=(ispCounts[n.isp]||0)+1; });
+  const ispStr=Object.entries(ispCounts).map(([k,v])=>`${k}: ${v}`).join(" · ");
+  document.getElementById("sub").textContent =
+    `${d.count} access points nearby · scanned ${d.scanned_at||""}` + (ispStr?` · ${ispStr}`:"");
+  if (!d.location_unredacted) document.getElementById("redacted").classList.add("show");
+  const el = document.getElementById("cards");
+  el.innerHTML = d.networks.map(n=>{
+    const name = (n.ssid && n.ssid!=="<redacted>" && n.ssid!=="<hidden>") ? n.ssid : n.label;
+    const ispBadge = n.isp ? `<span class="isp ${ispClass(n.isp)}">${n.isp}</span>` : "";
+    return `
+    <div class="card ${n.connected?'connected':''}">
+      <div class="top">
+        <div class="name">${name} ${ispBadge} ${n.connected?'<span class="tag-conn">● connected</span>':''}
+          <div><small>${n.security||'—'} · ${n.band||'?'} · ch ${(''+(n.channel||'')).split(' ')[0]}</small></div>
+        </div>
+        <span class="badge ${levelClass(n.posture_level)}">${(n.posture_level||'unknown').toUpperCase()}</span>
+      </div>
+      <div class="meta">
+        <span>Signal ${bars(n.signal_quality)}</span>
+        <span><b>${n.rssi!=null?n.rssi+' dBm':'—'}</b></span>
+        <span>PHY <b>${(n.phy||'—')}</b></span>
+      </div>
+      <div class="score-row">
+        <div class="track"><div class="fill" style="width:${n.posture_score}%;background:${fillColor(n.posture_score)}"></div></div>
+        <b style="font-size:13px">${n.posture_score}</b>
+      </div>
+      <div class="postnote">${n.posture_note||''}</div>
+    </div>`; }).join("");
+}).catch(()=>{ document.getElementById("sub").textContent="failed to load ./data/wifi.json"; });
+
+// ---- offline passphrase scorer ----
+function score(pw){
+  const length=pw.length;
+  const cls={lower:/[a-z]/.test(pw),upper:/[A-Z]/.test(pw),digit:/\d/.test(pw),symbol:/[^A-Za-z0-9]/.test(pw)};
+  let pool=0; if(cls.lower)pool+=26; if(cls.upper)pool+=26; if(cls.digit)pool+=10; if(cls.symbol)pool+=33;
+  const entropy = pool? +(length*Math.log2(pool)).toFixed(1):0;
+  const warns=[]; const low=pw.toLowerCase();
+  if(COMMON.has(low)) warns.push("Appears in common-password list");
+  if(length<8) warns.push("Shorter than 8 characters");
+  if(pw && new Set(pw).size<=2) warns.push("Very low character variety");
+  if(/(.)\1{2,}/.test(pw)) warns.push("Contains 3+ repeated characters");
+  if(pw.length>=4 && RUNS.some(r=>r.includes(low)||r.includes(low.split('').reverse().join('')))) warns.push("Keyboard/sequential pattern");
+  if(/^\d+$/.test(pw)) warns.push("Digits only");
+  let rating,color;
+  if(!pw){rating="";color="";}
+  else if(warns.length||entropy<28){rating="Very weak";}
+  else if(entropy<36){rating="Weak";}
+  else if(entropy<60){rating="Moderate";}
+  else if(entropy<80){rating="Strong";}
+  else {rating="Very strong";}
+  const map={"Very weak":15,"Weak":32,"Moderate":52,"Strong":72,"Very strong":95};
+  return {length,cls,pool,entropy,warns,rating,score:map[rating]||0};
+}
+function crackTime(entropy){
+  // offline guessing ~1e11 guesses/s (modern GPU vs WPA2 handshake is far slower, this is worst case for a weak KDF)
+  const guesses=Math.pow(2,entropy)/2, gps=1e11, secs=guesses/gps;
+  const units=[["years",31536000],["days",86400],["hours",3600],["minutes",60],["seconds",1]];
+  if(secs<1) return "under a second";
+  for(const [u,s] of units){ if(secs>=s){ const v=secs/s; return (v>=1000?Math.round(v).toLocaleString():v.toFixed(1))+" "+u; } }
+  return secs.toFixed(1)+" seconds";
+}
+const pw=document.getElementById("pw"), res=document.getElementById("result");
+function render(){
+  const v=pw.value; const r=score(v);
+  if(!v){ res.classList.remove("show"); return; }
+  res.classList.add("show");
+  document.getElementById("rating").textContent=r.rating;
+  document.getElementById("rating").style.color=fillColor(r.score);
+  document.getElementById("entropy").textContent=`≈ ${r.entropy} bits of entropy`;
+  const f=document.getElementById("fill"); f.style.width=r.score+"%"; f.style.background=fillColor(r.score);
+  const active=Object.entries(r.cls).filter(([k,x])=>x).map(([k])=>k);
+  document.getElementById("facts").innerHTML=
+    `<span class="chip">Length <b>${r.length}</b></span>
+     <span class="chip">Charset pool <b>${r.pool}</b></span>
+     <span class="chip">Classes <b>${active.join(", ")||"none"}</b></span>`;
+  document.getElementById("warns").innerHTML=r.warns.map(w=>`<li>${w}</li>`).join("");
+  document.getElementById("crack").innerHTML=`Est. worst-case offline crack time: <b>${crackTime(r.entropy)}</b>`;
+}
+pw.addEventListener("input",render);
+document.getElementById("clear").addEventListener("click",()=>{pw.value="";render();pw.focus();});
+</script>
+</body>
+</html>

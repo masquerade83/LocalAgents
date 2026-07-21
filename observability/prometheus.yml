@@ -1,0 +1,47 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: hermes
+    stack: clawd
+    host: mac-home
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: prometheus
+
+  - job_name: hermes-router
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['host.docker.internal:3999']
+        labels:
+          project: hermes
+          service: model-router
+
+  - job_name: litellm
+    metrics_path: /metrics/
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['host.docker.internal:4000']
+        labels:
+          project: hermes
+          service: litellm
+
+  - job_name: ollama-vram
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['host.docker.internal:9101']
+        labels:
+          project: hermes
+          service: ollama-exporter
+
+  - job_name: ollama-inference
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['host.docker.internal:9102']
+        labels:
+          project: hermes
+          service: ollama-inference-proxy

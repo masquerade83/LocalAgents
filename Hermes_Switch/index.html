@@ -139,6 +139,48 @@
       font-size: 0.85rem;
     }
     .refresh:hover { border-color: var(--accent); color: var(--text); }
+    .observe {
+      margin-top: 1.25rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+    .observe h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 650;
+    }
+    .observe-meta { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.75rem; }
+    .issue {
+      background: rgba(240,113,120,.12);
+      border: 1px solid rgba(240,113,120,.35);
+      color: #ffb4b8;
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.78rem;
+      margin-bottom: 0.45rem;
+    }
+    .ok-banner {
+      background: rgba(61,214,140,.1);
+      border: 1px solid rgba(61,214,140,.35);
+      color: var(--green);
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.78rem;
+      margin-bottom: 0.45rem;
+    }
+    .vram-line { font-size: 0.82rem; margin-bottom: 0.65rem; }
+    .route-list { list-style: none; padding: 0; margin: 0; }
+    .route-list li {
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 0.35rem 0;
+      border-top: 1px solid var(--border);
+      line-height: 1.45;
+    }
+    .route-list li:first-child { border-top: none; padding-top: 0; }
+    .route-list strong { color: var(--text); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -161,15 +203,24 @@
 
     <button class="refresh" id="refreshBtn">Refresh status</button>
 
+    <section class="observe" id="observePanel">
+      <h2>Observability</h2>
+      <div class="observe-meta" id="observeMeta">Loading stack snapshot…</div>
+      <div id="observeIssues"></div>
+      <div class="vram-line" id="observeVram"></div>
+      <ul class="route-list" id="observeRoutes"></ul>
+    </section>
+
     <div class="flow">
       Telegram @DhauladharBot → Hermes Gateway → LiteLLM :4000 → Ollama :11434<br />
-      n8n :5678 · Stack health: <a href="http://127.0.0.1:5678/webhook/stack-health" target="_blank">webhook</a>
+      n8n :5678 · Grafana :3000 · Prometheus :9090<br />
+      Stack health: <a href="http://127.0.0.1:5678/webhook/stack-health" target="_blank">webhook</a>
     </div>
   </div>
   <div class="toast" id="toast"></div>
 
   <script>
-    const ORDER = ["ollama", "postgres", "litellm", "router", "gateway", "n8n"];
+    const ORDER = ["ollama", "ollama_inference_proxy", "postgres", "litellm", "router", "gateway", "n8n", "prometheus", "grafana", "ollama_exporter"];
     const CORE = ["litellm", "gateway"];
     let busy = false;
     let services = [];
@@ -193,6 +244,48 @@
       if (!j.ok) throw new Error(j.error || "status failed");
       services = j.services.sort((a, b) => ORDER.indexOf(a.name) - ORDER.indexOf(b.name));
       render();
+    }
+
+    function renderObserve(j) {
+      const meta = document.getElementById("observeMeta");
+      const issuesEl = document.getElementById("observeIssues");
+      const vramEl = document.getElementById("observeVram");
+      const routesEl = document.getElementById("observeRoutes");
+
+      meta.textContent = j.timestamp
+        ? `Snapshot ${new Date(j.timestamp).toLocaleString()} · ${j.ok ? "healthy" : "issues detected"}`
+        : "No snapshot";
+
+      if (j.ok) {
+        issuesEl.innerHTML = '<div class="ok-banner">Stack OK — no open issues</div>';
+      } else {
+        issuesEl.innerHTML = (j.issues || []).map((i) => `<div class="issue">${i}</div>`).join("")
+          || '<div class="issue">Unknown issue</div>';
+      }
+
+      const vram = j.vram || {};
+      const models = (vram.models || []).map((m) => `${m.name} (${m.vram_gb} GB)`).join(", ");
+      vramEl.textContent = vram.ok
+        ? `VRAM: ${vram.models_loaded} model(s), ${vram.total_vram_gb} GB${models ? " — " + models : ""}`
+        : `VRAM: unavailable (${vram.error || "Ollama down"})`;
+
+      const routes = (j.explainability?.recent_router_decisions || []).slice(-3);
+      routesEl.innerHTML = routes.length
+        ? routes.map((r) =>
+            `<li><strong>${r.routed_model || r.out_model}</strong> ← ${r.requested_model || r.in_model || "?"} · ${r.reason} · ${r.latency_ms}ms</li>`
+          ).join("")
+        : "<li>No recent router decisions</li>";
+    }
+
+    async function fetchObserve() {
+      try {
+        const r = await fetch("/api/observe");
+        const j = await r.json();
+        if (!j.ok && j.error) throw new Error(j.error);
+        renderObserve(j);
+      } catch (e) {
+        document.getElementById("observeMeta").textContent = `Observe failed: ${e}`;
+      }
     }
 
     function render() {
@@ -260,11 +353,20 @@
     });
 
     document.getElementById("refreshBtn").addEventListener("click", () => {
-      if (!busy) fetchStatus().catch((e) => toast(String(e)));
+      if (!busy) {
+        fetchStatus().catch((e) => toast(String(e)));
+        fetchObserve();
+      }
     });
 
     fetchStatus().catch((e) => toast(String(e)));
-    setInterval(() => { if (!busy) fetchStatus().catch(() => {}); }, 8000);
+    fetchObserve();
+    setInterval(() => {
+      if (!busy) {
+        fetchStatus().catch(() => {});
+        fetchObserve();
+      }
+    }, 8000);
   </script>
 </body>
 </html>

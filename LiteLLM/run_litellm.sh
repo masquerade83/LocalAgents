@@ -3,6 +3,12 @@
 set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
+if [[ -f "$DIR/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$DIR/.env"
+  set +a
+fi
 CONFIG="${LITELLM_CONFIG:-$DIR/litellm_config.yaml}"
 PORT="${LITELLM_PORT:-4000}"
 LOG="${LITELLM_LOG:-$HOME/.hermes/logs/litellm.log}"
@@ -60,10 +66,11 @@ fi
 export DATABASE_URL
 export UI_USERNAME="${UI_USERNAME:-admin}"
 export UI_PASSWORD="${UI_PASSWORD:-admin}"
+export LITELLM_ENABLE_PROMETHEUS="${LITELLM_ENABLE_PROMETHEUS:-true}"
 
 # Vision via Ollama requires Pillow in the LiteLLM venv.
 if command -v uv >/dev/null 2>&1; then
-  uv pip install --python "$HOME/.local/share/uv/tools/litellm/bin/python" Pillow prisma >/dev/null 2>&1 || true
+  uv pip install --python "$HOME/.local/share/uv/tools/litellm/bin/python" Pillow prisma prometheus_client >/dev/null 2>&1 || true
 fi
 
 echo "Starting LiteLLM proxy (config=${CONFIG}, port=${PORT})"

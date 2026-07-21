@@ -1,0 +1,123 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Stack Overview",
+      "type": "link",
+      "url": "/d/hermes-stack-overview/hermes-stack-overview"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le, model) (rate(litellm_llm_api_time_to_first_token_metric_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P50 TTFT {{model}}", "refId": "A" },
+        { "expr": "histogram_quantile(0.90, sum by (le, model) (rate(litellm_llm_api_time_to_first_token_metric_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P90 TTFT {{model}}", "refId": "B" },
+        { "expr": "histogram_quantile(0.95, sum by (le, model) (rate(litellm_llm_api_time_to_first_token_metric_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P95 TTFT {{model}}", "refId": "C" },
+        { "expr": "histogram_quantile(0.99, sum by (le, model) (rate(litellm_llm_api_time_to_first_token_metric_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P99 TTFT {{model}}", "refId": "D" }
+      ],
+      "title": "TTFT (LiteLLM) — streaming requests",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le, model) (rate(litellm_request_total_latency_metric_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P50 {{model}}", "refId": "A" },
+        { "expr": "histogram_quantile(0.90, sum by (le, model) (rate(litellm_request_total_latency_metric_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P90 {{model}}", "refId": "B" },
+        { "expr": "histogram_quantile(0.95, sum by (le, model) (rate(litellm_request_total_latency_metric_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P95 {{model}}", "refId": "C" },
+        { "expr": "histogram_quantile(0.99, sum by (le, model) (rate(litellm_request_total_latency_metric_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P99 {{model}}", "refId": "D" }
+      ],
+      "title": "End-to-end latency (LiteLLM)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms", "decimals": 1 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "targets": [
+        { "expr": "1000 * sum by (model) (rate(litellm_deployment_latency_per_output_token_sum{project=\"hermes\"}[5m])) / sum by (model) (rate(litellm_deployment_latency_per_output_token_count{project=\"hermes\"}[5m]))", "legendFormat": "ITL ms/token {{model}}", "refId": "A" }
+      ],
+      "title": "Inter-token latency (LiteLLM, ms/token)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "tok/s", "decimals": 2 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "targets": [
+        { "expr": "sum by (model) (rate(litellm_output_tokens_metric_total{project=\"hermes\"}[1m]))", "legendFormat": "{{model}}", "refId": "A" }
+      ],
+      "title": "Output tokens/sec (LiteLLM)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le, model) (rate(ollama_prefill_seconds_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P50 prefill {{model}}", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum by (le, model) (rate(ollama_prefill_seconds_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P95 prefill {{model}}", "refId": "B" }
+      ],
+      "title": "Prefill (Ollama proxy)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 6,
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le, model) (rate(ollama_decode_seconds_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P50 decode {{model}}", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum by (le, model) (rate(ollama_decode_seconds_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P95 decode {{model}}", "refId": "B" }
+      ],
+      "title": "Decode (Ollama proxy)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms", "decimals": 1 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "id": 7,
+      "targets": [
+        { "expr": "1000 * histogram_quantile(0.50, sum by (le, model) (rate(ollama_itl_seconds_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P50 ITL {{model}}", "refId": "A" },
+        { "expr": "1000 * histogram_quantile(0.95, sum by (le, model) (rate(ollama_itl_seconds_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P95 ITL {{model}}", "refId": "B" }
+      ],
+      "title": "Inter-token latency (Ollama proxy, ms/token)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "id": 8,
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le, model) (rate(ollama_ttft_seconds_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P50 TTFT {{model}}", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum by (le, model) (rate(ollama_ttft_seconds_bucket{project=\"hermes\"}[5m])))", "legendFormat": "P95 TTFT {{model}}", "refId": "B" }
+      ],
+      "title": "TTFT (Ollama proxy, streamed)",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["hermes", "clawd", "latency"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "Hermes LLM Latency",
+  "uid": "hermes-llm-latency",
+  "version": 1,
+  "description": "TTFT, P50-P99, ITL, prefill/decode for Hermes stack (LiteLLM + Ollama inference proxy)."
+}
